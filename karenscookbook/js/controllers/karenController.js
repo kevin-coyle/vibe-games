@@ -16,7 +16,7 @@
  * MainWindow.cpp, with timing constants preserved.
  */
 
-const STORY_CHANCE = 0.15; // probability a selection triggers a story
+const STORY_ON_SELECTION = 3; // the Nth recipe they pick gets the story instead
 const REACTIONS = ['delicious', 'tasty', 'goodchoice'];
 const SCOLDS = ['rude', 'notfinished', 'letmefinish', 'mykids'];
 const MAX_INTERRUPTIONS = 5; // on the 5th, she leaves
@@ -42,6 +42,7 @@ export class KarenController {
     this._interruptCount = 0;
     this._resumeTimer = null;
     this._suppressReaction = false; // skip reaction on a forced auto-pick
+    this._selectionCount = 0; // reaction-eligible selections so far
 
     this._audio.onStoryEnded(() => this._endStory());
   }
@@ -73,7 +74,8 @@ export class KarenController {
   }
 
   _reactToSelection(recipeId) {
-    if (Math.random() < STORY_CHANCE) {
+    this._selectionCount += 1;
+    if (this._selectionCount === STORY_ON_SELECTION) {
       this._startStory(recipeId);
     } else {
       const idx = Math.floor(Math.random() * REACTIONS.length);
