@@ -124,7 +124,6 @@ class IntroPlayer {
     };
 
     narration.addEventListener('ended', () => {
-      this.ended = true;
       this.endIntro();
     }, { once: true });
 
