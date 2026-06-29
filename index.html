@@ -104,7 +104,7 @@
     .zork h2 { color: #4caf50; }
     .clue h2 { color: #c4a35a; }
     .karen h2 { color: #d97736; }
-    .karen .card-img { height: 280px; object-position: center 30%; border-bottom-color: #d97736; }
+    .karen .card-img { height: 180px; object-position: center 30%; }
 
     .card.featured {
       position: relative;
@@ -135,12 +135,19 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .card.featured .card-img {
-      width: calc(100% + 4rem);
-      margin: -2rem -2rem 1.5rem -2rem;
+    .card .card-img {
+      width: 100%;
       height: 140px;
       object-fit: cover;
       display: block;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .card.featured .card-img {
+      width: calc(100% + 4rem);
+      margin: -2rem -2rem 1.5rem -2rem;
+      border-radius: 0;
       border-bottom: 2px solid #c4a35a;
     }
 
@@ -175,8 +182,7 @@
       <div class="controls">Click to move &middot; Make suggestions &middot; Accuse!</div>
     </a>
 
-    <a href="karenscookbook/index.html" class="card karen featured">
-      <span class="badge">NEW!</span>
+    <a href="karenscookbook/index.html" class="card karen">
       <img class="card-img" src="karenscookbook/img/header-karen.png" alt="Karen the Cook">
       <h2>Karen's Cookbook</h2>
       <div class="meta">
