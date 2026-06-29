@@ -85,6 +85,10 @@ class IntroPlayer {
     this.sfxPlayed = {};
     this.ended = false;
 
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+
     this.sounds.bgmusic.volume = 0.3;
     this.sounds.bgmusic.loop = true;
     this.sounds.bgmusic.play().catch(() => {});
@@ -157,6 +161,7 @@ class IntroPlayer {
     this.sceneIndex = index;
     const scene = SCENE_TEXTS[index];
 
+    this.sceneEl.style.transform = 'scale(1)';
     this.sceneEl.style.backgroundImage = `url(${scene.img})`;
     this.sceneEl.style.opacity = '1';
 
@@ -175,6 +180,9 @@ class IntroPlayer {
       this.subtitleEl.style.opacity = '1';
     }, 1400);
 
+    if (index === 3) {
+      setTimeout(() => this.zoomFlashSequence(), 2000);
+    }
   }
 
   playSFX(name) {
@@ -234,6 +242,20 @@ class IntroPlayer {
       if (s) { s.pause(); s.currentTime = 0; }
     });
     this.overlay.style.opacity = '';
+  }
+
+  async zoomFlashSequence() {
+    const zooms = [1.12, 1.35, 1.7];
+
+    for (const zoom of zooms) {
+      this.lightningEl.classList.remove('zoom-flash');
+      void this.lightningEl.offsetWidth;
+      this.lightningEl.classList.add('zoom-flash');
+
+      this.sceneEl.style.transform = `scale(${zoom})`;
+
+      await this.delay(550);
+    }
   }
 
   delay(ms) {
