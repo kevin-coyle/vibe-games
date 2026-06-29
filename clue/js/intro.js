@@ -34,6 +34,7 @@ class IntroPlayer {
     this.logoImg = document.getElementById('intro-logo-img');
     this.logoLabel = document.getElementById('intro-logo-label');
     this.logoSub = document.getElementById('intro-logo-sub');
+    this.startBtnShown = false;
 
     this.overlay.classList.remove('hidden');
 
@@ -217,11 +218,7 @@ class IntroPlayer {
     this.sounds.bgmusic.volume = 0.15;
 
     await this.delay(600);
-    this.startGameBtn.classList.remove('hidden');
-    this.startGameBtn.addEventListener('click', () => {
-      this.cleanup();
-      this.onComplete();
-    }, { once: true });
+    this.showStartButton();
   }
 
   skip() {
@@ -255,6 +252,18 @@ class IntroPlayer {
 
       await this.delay(550);
     }
+
+    this.showStartButton();
+  }
+
+  showStartButton() {
+    if (this.startBtnShown) return;
+    this.startBtnShown = true;
+    this.startGameBtn.classList.remove('hidden');
+    this.startGameBtn.addEventListener('click', () => {
+      this.cleanup();
+      this.onComplete();
+    }, { once: true });
   }
 
   delay(ms) {
