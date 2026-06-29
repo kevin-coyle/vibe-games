@@ -1,0 +1,303 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Courier+Prime:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  cursor: default;
+  font-family: 'Courier Prime', monospace;
+  color: #ccc;
+  user-select: none;
+}
+
+canvas {
+  display: block;
+}
+
+#blocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.8s ease;
+}
+
+#blocker.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#instructions {
+  text-align: center;
+  max-width: 600px;
+  padding: 40px;
+}
+
+#instructions h1 {
+  font-family: 'Creepster', cursive;
+  font-size: 72px;
+  color: #8b0000;
+  text-shadow: 0 0 40px rgba(139, 0, 0, 0.6), 0 0 80px rgba(139, 0, 0, 0.3);
+  letter-spacing: 8px;
+  margin-bottom: 10px;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(139, 0, 0, 0.6), 0 0 80px rgba(139, 0, 0, 0.3); }
+  50% { text-shadow: 0 0 60px rgba(139, 0, 0, 0.8), 0 0 120px rgba(139, 0, 0, 0.5); }
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+  letter-spacing: 4px;
+}
+
+.controls-info {
+  margin: 25px 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 2;
+}
+
+.loading {
+  font-size: 14px;
+  color: #888;
+  margin: 20px 0;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.5; }
+}
+
+.start-btn {
+  font-family: 'Courier Prime', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 16px 48px;
+  background: transparent;
+  color: #8b0000;
+  border: 2px solid #8b0000;
+  cursor: pointer;
+  letter-spacing: 4px;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #8b0000;
+  color: #000;
+  box-shadow: 0 0 30px rgba(139, 0, 0, 0.4);
+}
+
+.start-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #444;
+  color: #444;
+}
+
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#hud.visible {
+  opacity: 1;
+}
+
+#health-container {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-label {
+  font-size: 11px;
+  color: #666;
+  letter-spacing: 3px;
+}
+
+#health-bar {
+  width: 180px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#health-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #8b0000, #cc0000);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+#health-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #cc0000;
+  width: 30px;
+}
+
+#timer-container {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  text-align: right;
+}
+
+#timer {
+  font-size: 28px;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+#flashlight-container {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+#flashlight-bar {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+#flashlight-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #664400, #cc8800);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.15);
+  font-weight: 100;
+}
+
+#message {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: #cc0000;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  text-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+  letter-spacing: 2px;
+}
+
+#message.show {
+  opacity: 1;
+}
+
+#gameOver {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  transition: opacity 1s ease;
+}
+
+#gameOver.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#gameOver h1 {
+  font-family: 'Creepster', cursive;
+  font-size: 80px;
+  color: #8b0000;
+  text-shadow: 0 0 60px rgba(139, 0, 0, 0.6);
+  letter-spacing: 12px;
+  margin-bottom: 20px;
+}
+
+#gameOver p {
+  font-size: 18px;
+  color: #666;
+  margin: 10px 0;
+  letter-spacing: 2px;
+}
+
+#finalTime {
+  color: #cc0000;
+  font-weight: 700;
+}
+
+#deathMessage {
+  font-size: 14px;
+  color: #444;
+  font-style: italic;
+}
+
+#restartBtn {
+  font-family: 'Courier Prime', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 14px 40px;
+  background: transparent;
+  color: #8b0000;
+  border: 2px solid #8b0000;
+  cursor: pointer;
+  letter-spacing: 4px;
+  transition: all 0.3s ease;
+  margin-top: 40px;
+}
+
+#restartBtn:hover {
+  background: #8b0000;
+  color: #000;
+  box-shadow: 0 0 30px rgba(139, 0, 0, 0.4);
+}

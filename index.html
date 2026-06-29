@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kevin's Game Collection</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .card {
+      background: #1a1a2e;
+      border-radius: 16px;
+      padding: 2rem;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid #2a2a3e;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+      border-color: #f7971e;
+    }
+
+    .card h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .card p {
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+      flex: 1;
+    }
+
+    .card .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card .tag {
+      background: #2a2a3e;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
+
+    .card .controls {
+      font-size: 0.85rem;
+      color: #888;
+      border-top: 1px solid #2a2a3e;
+      padding-top: 1rem;
+    }
+
+    .mario h2 { color: #e52521; }
+    .tetris h2 { color: #00bcd4; }
+    .silent h2 { color: #8bc34a; }
+
+    footer {
+      margin-top: 3rem;
+      color: #555;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kevin's Game Collection</h1>
+  <p class="subtitle">A trio of browser-based classics — pick your adventure</p>
+
+  <div class="games">
+    <a href="mariobros/index.html" class="card mario">
+      <h2>Super Mario Bros</h2>
+      <div class="meta">
+        <span class="tag">Platformer</span>
+        <span class="tag">Single-file</span>
+      </div>
+      <p>Run, jump, and stomp through a side-scrolling level inspired by the NES classic. Coins, Goombas, Koopa Troopas, power-ups, and a flagpole finish await.</p>
+      <div class="controls">Arrow keys / WASD &middot; Space / Up to jump</div>
+    </a>
+
+    <a href="tetris/index.html" class="card tetris">
+      <h2>Tetris</h2>
+      <div class="meta">
+        <span class="tag">Puzzle</span>
+        <span class="tag">Single-file</span>
+      </div>
+      <p>Classic block-stacking with ghost piece, next-piece preview, wall kicks, increasing speed, and procedural chiptune music. Touch support included.</p>
+      <div class="controls">Arrow keys &middot; Space to hard drop &middot; P to pause</div>
+    </a>
+
+    <a href="silenthrill/index.html" class="card silent">
+      <h2>Silent Thrill</h2>
+      <div class="meta">
+        <span class="tag">3D Horror</span>
+        <span class="tag">Three.js</span>
+      </div>
+      <p>A first-person survival horror experience in a foggy graveyard. Survive ghost patrols using only your flashlight. Features dynamic AI, health system, and immersive audio.</p>
+      <div class="controls">WASD &middot; Mouse to look &middot; F for flashlight</div>
+    </a>
+  </div>
+
+  <footer>Built with JavaScript &middot; Open each game in your browser to play</footer>
+</body>
+</html>

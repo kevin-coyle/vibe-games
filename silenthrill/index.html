@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Silent Thrill</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="blocker">
+    <div id="instructions">
+      <h1>SILENT THRILL</h1>
+      <p class="subtitle">A Survival Horror Experience</p>
+      <div class="loading" id="loadingStatus">Loading assets...</div>
+      <div class="controls-info">
+        <p>WASD - Move &nbsp;|&nbsp; Mouse - Look &nbsp;|&nbsp; F - Flashlight</p>
+        <p>Survive the night. The ghosts are hunting you.</p>
+      </div>
+      <button id="startBtn" class="start-btn" disabled>LOADING...</button>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div id="health-container">
+      <div class="hud-label">HEALTH</div>
+      <div id="health-bar">
+        <div id="health-fill"></div>
+      </div>
+      <div id="health-text">100</div>
+    </div>
+    <div id="timer-container">
+      <div class="hud-label">SURVIVED</div>
+      <div id="timer">00:00</div>
+    </div>
+    <div id="flashlight-container">
+      <div class="hud-label">FLASHLIGHT</div>
+      <div id="flashlight-bar">
+        <div id="flashlight-fill"></div>
+      </div>
+    </div>
+    <div id="crosshair">+</div>
+    <div id="message"></div>
+  </div>
+
+  <div id="gameOver" class="hidden">
+    <h1>YOU DIED</h1>
+    <p>You survived for <span id="finalTime">00:00</span></p>
+    <p id="deathMessage">The darkness consumed you...</p>
+    <button id="restartBtn">TRY AGAIN</button>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
