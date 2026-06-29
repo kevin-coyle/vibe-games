@@ -37,7 +37,7 @@
 
     .games {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 2rem;
       max-width: 1200px;
       width: 100%;
@@ -107,6 +107,7 @@
     .card.featured {
       position: relative;
       overflow: hidden;
+      grid-column: 1 / -1;
       border-color: #c4a35a;
       background: linear-gradient(135deg, #1a1a2e 0%, #1e182e 100%);
     }
@@ -146,6 +147,13 @@
       color: #555;
       font-size: 0.85rem;
     }
+
+    @media (max-width: 720px) {
+      .games { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .games { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -153,6 +161,18 @@
   <p class="subtitle">Seven browser-based games — pick your adventure</p>
 
   <div class="games">
+    <a href="clue/index.html" class="card clue featured">
+      <span class="badge">TOP GAME</span>
+      <img class="card-img" src="clue/img/intro-mansion.png" alt="Tudor Mansion">
+      <h2>Cluedo</h2>
+      <div class="meta">
+        <span class="tag">Mystery</span>
+        <span class="tag">Board Game</span>
+      </div>
+      <p>A dreadful murder has occurred at Tudor Mansion! Six suspects, six weapons, nine rooms. Make suggestions and accuse the killer in this classic whodunit.</p>
+      <div class="controls">Click to move &middot; Make suggestions &middot; Accuse!</div>
+    </a>
+
     <a href="mariobros/index.html" class="card mario">
       <h2>Super Mario Bros</h2>
       <div class="meta">
@@ -211,18 +231,6 @@
       </div>
       <p>A terminal-style interactive fiction adventure inspired by the Infocom classic. Explore 11 rooms, collect items, solve the world, and watch the auto-map grow — all with a CRT monitor aesthetic.</p>
       <div class="controls">Type commands &middot; n/s/e/w/u/d to move</div>
-    </a>
-
-    <a href="clue/index.html" class="card clue featured">
-      <span class="badge">TOP GAME</span>
-      <img class="card-img" src="clue/img/intro-mansion.png" alt="Tudor Mansion">
-      <h2>Cluedo</h2>
-      <div class="meta">
-        <span class="tag">Mystery</span>
-        <span class="tag">Board Game</span>
-      </div>
-      <p>A dreadful murder has occurred at Tudor Mansion! Six suspects, six weapons, nine rooms. Make suggestions and accuse the killer in this classic whodunit.</p>
-      <div class="controls">Click to move &middot; Make suggestions &middot; Accuse!</div>
     </a>
   </div>
 
