@@ -181,7 +181,7 @@ class IntroPlayer {
     }, 1400);
 
     if (index === 3) {
-      setTimeout(() => this.zoomFlashSequence(), 2000);
+      setTimeout(() => this.zoomFlashSequence(), 3000);
     }
   }
 
