@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme Park</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #1a1a2e;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  user-select: none;
+  overflow: hidden;
+}
+#game-wrapper {
+  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+  border: 3px solid #e94560;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 40px rgba(233,69,96,0.3), inset 0 0 60px rgba(0,0,0,0.3);
+}
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 14px;
+  text-shadow: 0 0 8px rgba(233,69,96,0.5);
+}
+#top-bar .stat { display: flex; align-items: center; gap: 6px; }
+#top-bar .stat .label { color: #8899aa; }
+#top-bar .stat .value { color: #ffd700; font-weight: bold; font-size: 16px; }
+#top-bar .stat .value.money { color: #7fff7f; }
+#top-bar .stat .value.rating { color: #ffd700; }
+#top-bar .stat .value.guests { color: #7fcfff; }
+#top-bar .stat .value.year { color: #ff99cc; }
+#game-container {
+  display: flex;
+  gap: 10px;
+}
+#toolbar {
+  width: 140px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#toolbar .tool-group-label {
+  color: #8899aa;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 4px 0 2px 0;
+  border-bottom: 1px solid #334;
+  padding-bottom: 2px;
+}
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: #ccc;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  transition: all 0.15s;
+  text-align: left;
+}
+.tool-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(233,69,96,0.4); }
+.tool-btn.selected { background: rgba(233,69,96,0.25); border-color: #e94560; color: #fff; }
+.tool-btn .icon { font-size: 14px; width: 20px; text-align: center; }
+.tool-btn .cost { color: #7fff7f; font-size: 9px; margin-left: auto; }
+#canvas-wrap {
+  position: relative;
+  border: 2px solid #e94560;
+  border-radius: 4px;
+  line-height: 0;
+}
+#gameCanvas {
+  display: block;
+  cursor: pointer;
+}
+#info-panel {
+  width: 180px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  padding: 10px;
+  color: #ccc;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 520px;
+}
+#info-panel h3 {
+  color: #e94560;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #334;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.info-row .label { color: #8899aa; }
+.info-row .value { color: #ddd; }
+#guest-log {
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.guest-entry { color: #8af; padding: 1px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.guest-entry .happy { color: #7f7; }
+.guest-entry .sad { color: #f77; }
+#bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  color: #667;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+#bottom-bar a { color: #e94560; text-decoration: none; }
+#bottom-bar a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <div id="top-bar">
+    <div class="stat"><span class="label">PARK</span><span class="value" id="parkName">THEME PARK</span></div>
+    <div class="stat"><span class="label">💰</span><span class="value money" id="moneyDisplay">$10,000</span></div>
+    <div class="stat"><span class="label">⭐</span><span class="value rating" id="ratingDisplay">500</span></div>
+    <div class="stat"><span class="label">👥</span><span class="value guests" id="guestsDisplay">0</span></div>
+    <div class="stat"><span class="label">📅</span><span class="value year" id="yearDisplay">Year 1, Month 1</span></div>
+  </div>
+  <div id="game-container">
+    <div id="toolbar"></div>
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas" width="800" height="512"></canvas>
+    </div>
+    <div id="info-panel">
+      <h3>🏗️ Build</h3>
+      <div id="build-info">Select a tool to build</div>
+      <h3>📊 Park Stats</h3>
+      <div class="info-row"><span class="label">Rides</span><span class="value" id="rideCount">0</span></div>
+      <div class="info-row"><span class="label">Shops</span><span class="value" id="shopCount">0</span></div>
+      <div class="info-row"><span class="label">Facilities</span><span class="value" id="facilityCount">0</span></div>
+      <div class="info-row"><span class="label">Path Tiles</span><span class="value" id="pathCount">0</span></div>
+      <div class="info-row"><span class="label">Income/Yr</span><span class="value" id="incomeDisplay">$0</span></div>
+      <h3>👋 Guest Log</h3>
+      <div id="guest-log"></div>
+    </div>
+  </div>
+  <div id="bottom-bar">
+    <span>🎢 Theme Park Tycoon | <span id="pauseIndicator">▶ Running</span> | Speed: <span id="speedIndicator">1x</span></span>
+    <span>Space=Pause +/-=Speed | Sound: <span id="soundIndicator">🔊 ON</span></span>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+const CFG = {
+  TILE_SIZE: 32,
+  GRID_W: 25,
+  GRID_H: 16,
+  GUEST_SPEED: 6,
+  GUEST_SPAWN_INTERVAL: 3000,
+  TICK_INTERVAL: 50,
+  MONEY_START: 10000,
+  RIDE_INCOME_INTERVAL: 2000,
+  SHOP_INCOME_INTERVAL: 1500,
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// ============================================================
+// TILE TYPES
+// ============================================================
+const T = {
+  GRASS: 0, PATH: 1, ENTRANCE: 2,
+  CAROUSEL: 10, FERRIS_WHEEL: 11, TEA_CUPS: 12,
+  ROLLER_COASTER: 13, LOG_FLUME: 14, BUMPER_CARS: 15,
+  DROP_TOWER: 16, LOOP_COASTER: 17, GHOST_HOUSE: 18,
+  BURGER_SHOP: 20, DRINK_STALL: 21, ICE_CREAM: 22, SOUVENIR: 23,
+  TOILET: 30, BENCH: 31, BIN: 32,
+  TREE: 40, FLOWER: 41, LAMP: 42,
+};
+
+const RIDE_DATA = {
+  [T.CAROUSEL]:      { name: 'Carousel',     cat:'gentle',  cost:500,  income:8,   color:'#ff69b4', icon:'🎠', w:2, h:2, desc:'Gentle spinning ride' },
+  [T.FERRIS_WHEEL]:  { name: 'Ferris Wheel', cat:'gentle',  cost:800,  income:12,  color:'#ff6347', icon:'🎡', w:2, h:2, desc:'Scenic wheel ride' },
+  [T.TEA_CUPS]:      { name: 'Tea Cups',     cat:'gentle',  cost:600,  income:9,   color:'#ffd700', icon:'☕', w:2, h:2, desc:'Spinning cups ride' },
+  [T.ROLLER_COASTER]:{ name: 'Coaster',      cat:'moderate',cost:2000, income:25,  color:'#ff4500', icon:'🎢', w:3, h:2, desc:'Exciting coaster' },
+  [T.LOG_FLUME]:     { name: 'Log Flume',    cat:'moderate',cost:1500, income:20,  color:'#00bfff', icon:'🌊', w:3, h:2, desc:'Water splash ride' },
+  [T.BUMPER_CARS]:   { name: 'Bumper Cars',  cat:'moderate',cost:1200, income:18,  color:'#ffa500', icon:'🚗', w:2, h:2, desc:'Bump & ride' },
+  [T.DROP_TOWER]:    { name: 'Drop Tower',   cat:'thrilling',cost:3000,income:35,  color:'#8b008b', icon:'⬇️', w:2, h:2, desc:'Free fall ride' },
+  [T.LOOP_COASTER]:  { name: 'Loop Coaster', cat:'thrilling',cost:4000,income:45,  color:'#dc143c', icon:'🔄', w:3, h:3, desc:'Inverted coaster' },
+  [T.GHOST_HOUSE]:   { name: 'Ghost House',  cat:'thrilling',cost:2500,income:30,  color:'#4b0082', icon:'👻', w:2, h:2, desc:'Spooky walkthrough' },
+  [T.BURGER_SHOP]:   { name: 'Burgers',      cat:'shop',    cost:1000, income:15,  color:'#8b4513', icon:'🍔', w:1, h:1, desc:'Food shop' },
+  [T.DRINK_STALL]:   { name: 'Drinks',       cat:'shop',    cost:500,  income:10,  color:'#00ced1', icon:'🥤', w:1, h:1, desc:'Drink shop' },
+  [T.ICE_CREAM]:     { name: 'Ice Cream',    cat:'shop',    cost:600,  income:12,  color:'#ffb6c1', icon:'🍦', w:1, h:1, desc:'Ice cream shop' },
+  [T.SOUVENIR]:      { name: 'Gifts',        cat:'shop',    cost:800,  income:14,  color:'#daa520', icon:'🎁', w:1, h:1, desc:'Souvenir shop' },
+  [T.TOILET]:        { name: 'Toilet',       cat:'facility',cost:300,  income:0,   color:'#90ee90', icon:'🚻', w:1, h:1, desc:'Restroom' },
+  [T.BENCH]:         { name: 'Bench',        cat:'facility',cost:100,  income:0,   color:'#deb887', icon:'🪑', w:1, h:1, desc:'Rest spot' },
+  [T.BIN]:           { name: 'Bin',          cat:'facility',cost:50,   income:0,   color:'#696969', icon:'🗑️', w:1, h:1, desc:'Litter bin' },
+  [T.TREE]:          { name: 'Tree',         cat:'decor',   cost:30,   income:0,   color:'#2d8a2d', icon:'🌳', w:1, h:1, desc:'Park beautification' },
+  [T.FLOWER]:        { name: 'Flowers',      cat:'decor',   cost:15,   income:0,   color:'#ff6b9d', icon:'🌷', w:1, h:1, desc:'Pretty flowers' },
+  [T.LAMP]:          { name: 'Lamp Post',    cat:'decor',   cost:40,   income:0,   color:'#cd853f', icon:'💡', w:1, h:1, desc:'Park lighting' },
+};
+
+const TOOLS = [
+  { type:'path', label:'Path', icon:'🟫', cost:20, category:'paths' },
+  { type:'remove', label:'Remove', icon:'❌', cost:0, category:'paths' },
+  { type:T.CAROUSEL, icon:'🎠', category:'gentle' },
+  { type:T.FERRIS_WHEEL, icon:'🎡', category:'gentle' },
+  { type:T.TEA_CUPS, icon:'☕', category:'gentle' },
+  { type:T.ROLLER_COASTER, icon:'🎢', category:'moderate' },
+  { type:T.LOG_FLUME, icon:'🌊', category:'moderate' },
+  { type:T.BUMPER_CARS, icon:'🚗', category:'moderate' },
+  { type:T.DROP_TOWER, icon:'⬇️', category:'thrilling' },
+  { type:T.LOOP_COASTER, icon:'🔄', category:'thrilling' },
+  { type:T.GHOST_HOUSE, icon:'👻', category:'thrilling' },
+  { type:T.BURGER_SHOP, icon:'🍔', category:'shops' },
+  { type:T.DRINK_STALL, icon:'🥤', category:'shops' },
+  { type:T.ICE_CREAM, icon:'🍦', category:'shops' },
+  { type:T.SOUVENIR, icon:'🎁', category:'shops' },
+  { type:T.TOILET, icon:'🚻', category:'facilities' },
+  { type:T.BENCH, icon:'🪑', category:'facilities' },
+  { type:T.BIN, icon:'🗑️', category:'facilities' },
+  { type:T.TREE, icon:'🌳', category:'decor' },
+  { type:T.FLOWER, icon:'🌷', category:'decor' },
+  { type:T.LAMP, icon:'💡', category:'decor' },
+];
+
+const CAT_ORDER = ['paths','gentle','moderate','thrilling','shops','facilities','decor'];
+const CAT_LABELS = {
+  paths:'Paths', gentle:'Gentle Rides', moderate:'Moderate Rides',
+  thrilling:'Thrilling Rides', shops:'Shops', facilities:'Facilities', decor:'Decor'
+};
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const game = {
+  money: CFG.MONEY_START,
+  parkRating: 500,
+  guests: [],
+  grid: [],
+  guestIdCounter: 0,
+  year: 1,
+  month: 1,
+  day: 1,
+  monthTicks: 0,
+  totalIncome: 0,
+  lastYearIncome: 0,
+  selectedTool: 'path',
+  soundOn: true,
+  buildMode: false,
+  placeW: 1, placeH: 1,
+  mouseTileX: -1, mouseTileY: -1,
+  hoverValid: false,
+  entranceX: 12, entranceY: 0,
+  floats: [],
+  selectedTileX: -1, selectedTileY: -1,
+  paused: false,
+  speed: 1,
+  tick: 0,
+};
+
+function initGrid() {
+  game.grid = [];
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    game.grid[y] = [];
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      game.grid[y][x] = { type: T.GRASS, data: null };
+    }
+  }
+  // Place entrance
+  game.grid[0][12] = { type: T.ENTRANCE, data: { name:'Entrance' } };
+  // Place a few path tiles from entrance
+  game.grid[1][12] = { type: T.PATH, data: {} };
+  game.grid[1][11] = { type: T.PATH, data: {} };
+  game.grid[1][13] = { type: T.PATH, data: {} };
+}
+
+// ============================================================
+// GUEST CLASS
+// ============================================================
+class Guest {
+  constructor() {
+    this.id = game.guestIdCounter++;
+    this.x = game.entranceX;
+    this.y = 0;
+    this.px = this.x * CFG.TILE_SIZE + CFG.TILE_SIZE/2;
+    this.py = CFG.TILE_SIZE/2;
+    this.happiness = 60 + Math.random() * 30;
+    this.hunger = 10 + Math.random() * 20;
+    this.thirst = 10 + Math.random() * 20;
+    this.energy = 70 + Math.random() * 30;
+    this.speed = 0.3 + Math.random() * 0.2;
+    this.dir = { x: 0, y: 1 };
+    this.state = 'entering'; // entering, wandering, riding, eating, drinking, leaving, sitting
+    this.stateTimer = 0;
+    this.targetTile = null;
+    this.pathQueue = [];
+    this.timeInPark = 0;
+    this.money = 20 + Math.floor(Math.random() * 30);
+    this.color = `hsl(${Math.floor(Math.random() * 60 + 200)}, 70%, ${50 + Math.floor(Math.random() * 20)}%)`;
+    this.size = 4 + Math.random() * 2;
+    this.atRide = null;
+    this.moveCounter = 0;
+    this.exitIntent = false;
+    this.preferredCats = ['gentle','moderate','thrilling'][Math.floor(Math.random() * 3)];
+    this.logged = false;
+  }
+
+  update(dt) {
+    this.timeInPark += dt;
+
+    // Update needs
+    this.hunger += 0.05 * dt;
+    this.thirst += 0.04 * dt;
+    this.energy -= 0.03 * dt;
+    if (this.hunger > 100) this.hunger = 100;
+    if (this.thirst > 100) this.thirst = 100;
+    if (this.energy < 0) this.energy = 0;
+
+    // Check if should leave
+    if (!this.exitIntent) {
+      if (this.happiness < 20 && this.timeInPark > 10) this.exitIntent = true;
+      if (this.happiness > 90 && this.timeInPark > 30) this.exitIntent = true;
+      if (this.timeInPark > 120) this.exitIntent = true;
+    }
+
+    // State machine
+    switch (this.state) {
+      case 'entering':
+        this.moveToward(12, 1, dt);
+        if (this.y >= 1) this.state = 'wandering';
+        break;
+
+      case 'wandering':
+        this.wander(dt);
+        break;
+
+      case 'leaving':
+        this.moveToward(game.entranceX, 0, dt);
+        if (this.y <= 0) return false; // remove guest
+        break;
+
+      case 'riding': {
+        this.stateTimer -= dt * 1000;
+        if (this.stateTimer <= 0) {
+          this.happiness = Math.min(100, this.happiness + 15 + Math.random() * 10);
+          this.energy += 10;
+          this.state = 'wandering';
+          if (this.atRide) {
+            this.atRide.occupancy = Math.max(0, (this.atRide.occupancy || 1) - 1);
+            this.atRide = null;
+          }
+        }
+        break;
+      }
+      case 'eating': case 'drinking': {
+        this.stateTimer -= dt * 1000;
+        if (this.state === 'eating') this.hunger = Math.max(0, this.hunger - 2 * dt);
+        if (this.state === 'drinking') this.thirst = Math.max(0, this.thirst - 2 * dt);
+        if (this.stateTimer <= 0) {
+          this.happiness = Math.min(100, this.happiness + 5);
+          this.state = 'wandering';
+        }
+        break;
+      }
+      case 'sitting': {
+        this.energy = Math.min(100, this.energy + 1 * dt);
+        this.stateTimer -= dt * 1000;
+        if (this.stateTimer <= 0) this.state = 'wandering';
+        break;
+      }
+    }
+
+    // Clamp px,py to canvas
+    this.px = Math.max(2, Math.min(canvas.width - 2, this.px));
+    this.py = Math.max(2, Math.min(canvas.height - 2, this.py));
+    return true;
+  }
+
+  moveToward(tx, ty, dt) {
+    const targetPx = tx * CFG.TILE_SIZE + CFG.TILE_SIZE/2;
+    const targetPy = ty * CFG.TILE_SIZE + CFG.TILE_SIZE/2;
+    const dx = targetPx - this.px;
+    const dy = targetPy - this.py;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 2) {
+      this.x = tx; this.y = ty;
+      return;
+    }
+    const step = this.speed * dt * 1.5;
+    this.px += (dx/dist) * step;
+    this.py += (dy/dist) * step;
+    this.x = Math.floor(this.px / CFG.TILE_SIZE);
+    this.y = Math.floor(this.py / CFG.TILE_SIZE);
+  }
+
+  wander(dt) {
+    this.moveCounter++;
+    const threshold = Math.max(5, 15 - Math.floor(this.speed * 10));
+
+    if (this.moveCounter % threshold === 0) {
+      // Consider needs
+      if (this.hunger > 70 && !this.exitIntent) {
+        const shop = this.findNearby(T.BURGER_SHOP);
+        if (shop) {
+          this.useShop(shop, 'eating', T.BURGER_SHOP);
+          return;
+        }
+      }
+      if (this.thirst > 70 && !this.exitIntent) {
+        const shop = this.findNearby(T.DRINK_STALL);
+        if (shop) { this.useShop(shop, 'drinking', T.DRINK_STALL); return; }
+        const ice = this.findNearby(T.ICE_CREAM);
+        if (ice) { this.useShop(ice, 'eating', T.ICE_CREAM); return; }
+      }
+      if (this.energy < 25 && !this.exitIntent) {
+        const bench = this.findNearbyFacility(T.BENCH);
+        if (bench && Math.random() < 0.4) {
+          this.state = 'sitting';
+          this.stateTimer = 3000 + Math.random() * 4000;
+          return;
+        }
+      }
+      if (this.hunger > 80 || this.thirst > 80) {
+        this.exitIntent = true;
+      }
+
+      // Try to find a ride
+      if (!this.exitIntent && Math.random() < 0.3) {
+        const rides = this.getNearbyRides();
+        if (rides.length > 0) {
+          const ride = rides[Math.floor(Math.random() * rides.length)];
+          if (this.money >= 5) {
+            const rd = RIDE_DATA[ride.type];
+            if (rd && (!rd.cat || rd.cat === this.preferredCats || Math.random() < 0.4)) {
+              this.useRide(ride, rd);
+              return;
+            }
+          }
+        }
+      }
+
+      // Random walk
+      this.randomWalkStep();
+
+      if (this.exitIntent) {
+        this.state = 'leaving';
+      }
+    }
+
+    // Move toward current target tile
+    if (this.targetTile) {
+      this.moveToward(this.targetTile.x, this.targetTile.y, dt);
+      if (this.x === this.targetTile.x && this.y === this.targetTile.y) {
+        this.targetTile = null;
+      }
+    } else {
+      // Just move in current direction
+      const step = this.speed * dt * 1.5;
+      this.px += this.dir.x * step;
+      this.py += this.dir.y * step;
+      this.x = Math.floor(this.px / CFG.TILE_SIZE);
+      this.y = Math.floor(this.py / CFG.TILE_SIZE);
+    }
+  }
+
+  randomWalkStep() {
+    const dirs = [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}];
+    const walkable = [T.PATH, T.ENTRANCE];
+    const neighbors = [];
+    for (const d of dirs) {
+      const nx = this.x + d.x, ny = this.y + d.y;
+      if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
+        const t = game.grid[ny][nx].type;
+        if (walkable.includes(t) || RIDE_DATA[t]) {
+          neighbors.push({ x: nx, y: ny, d });
+        }
+      }
+    }
+    if (neighbors.length === 0) return;
+    // Avoid backtracking preference
+    const preferred = neighbors.filter(n => n.d.x !== -this.dir.x || n.d.y !== -this.dir.y);
+    const pick = preferred.length > 0 ? preferred[Math.floor(Math.random() * preferred.length)] : neighbors[Math.floor(Math.random() * neighbors.length)];
+    this.targetTile = { x: pick.x, y: pick.y };
+    this.dir = pick.d;
+  }
+
+  findNearby(type) {
+    for (let dy = -3; dy <= 3; dy++) {
+      for (let dx = -3; dx <= 3; dx++) {
+        const nx = this.x + dx, ny = this.y + dy;
+        if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
+          if (game.grid[ny][nx].type === type) return { x: nx, y: ny, type };
+        }
+      }
+    }
+    return null;
+  }
+
+  findNearbyFacility(type) {
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const nx = this.x + dx, ny = this.y + dy;
+        if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
+          if (game.grid[ny][nx].type === type) return { x: nx, y: ny, type };
+        }
+      }
+    }
+    return null;
+  }
+
+  getNearbyRides() {
+    const rideTypes = new Set([
+      T.CAROUSEL, T.FERRIS_WHEEL, T.TEA_CUPS,
+      T.ROLLER_COASTER, T.LOG_FLUME, T.BUMPER_CARS,
+      T.DROP_TOWER, T.LOOP_COASTER, T.GHOST_HOUSE
+    ]);
+    const found = [];
+    for (let dy = -4; dy <= 4; dy++) {
+      for (let dx = -4; dx <= 4; dx++) {
+        const nx = this.x + dx, ny = this.y + dy;
+        if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
+          const t = game.grid[ny][nx];
+          if (rideTypes.has(t.type)) {
+            const rd = RIDE_DATA[t.type];
+            const occupancy = t.data?.occupancy || 0;
+            const maxOcc = 5;
+            if (occupancy < maxOcc) {
+              found.push(t);
+            }
+          }
+        }
+      }
+    }
+    return found;
+  }
+
+  useRide(tile, rd) {
+    this.state = 'riding';
+    this.stateTimer = 3000 + Math.random() * 3000;
+    const cost = 4 + Math.floor(Math.random() * 8);
+    this.money -= cost;
+    game.totalIncome += cost;
+    this.atRide = tile;
+    tile.data = tile.data || {};
+    tile.data.occupancy = (tile.data.occupancy || 0) + 1;
+    if (tile.data.totalIncome === undefined) tile.data.totalIncome = 0;
+    tile.data.totalIncome += cost;
+
+    if (!this.logged) {
+      this.logged = true;
+      addGuestLog(`${rd.icon} Guest ${this.id} rides ${rd.name}!`);
+    }
+  }
+
+  useShop(shop, state, type) {
+    this.state = state;
+    this.stateTimer = 2000 + Math.random() * 2000;
+    const cost = 3 + Math.floor(Math.random() * 5);
+    this.money -= cost;
+    game.totalIncome += cost;
+    shop.data = shop.data || {};
+    shop.data.occupancy = (shop.data.occupancy || 0) + 1;
+    if (shop.data.totalIncome === undefined) shop.data.totalIncome = 0;
+    shop.data.totalIncome += cost;
+    const rd = RIDE_DATA[type];
+    if (!this.logged) {
+      this.logged = true;
+      addGuestLog(`🧑 Guest ${this.id} buys from ${rd ? rd.name : 'shop'}!`);
+    }
+  }
+}
+
+// ============================================================
+// GAME FUNCTIONS
+// ============================================================
+function addFloat(x, y, text, color) {
+  game.floats.push({ x, y, text, color: color || '#ffd700', life: 1.5, maxLife: 1.5, vy: -30 });
+}
+
+function addGuestLog(msg) {
+  const el = document.getElementById('guest-log');
+  const div = document.createElement('div');
+  div.className = 'guest-entry';
+  div.textContent = msg;
+  el.appendChild(div);
+  if (el.children.length > 50) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+
+function getToolCost(toolType) {
+  if (toolType === 'path') return 20;
+  if (toolType === 'remove') return 0;
+  if (RIDE_DATA[toolType]) return RIDE_DATA[toolType].cost;
+  return 0;
+}
+
+function canPlace(toolType, gx, gy) {
+  if (gx < 0 || gx >= CFG.GRID_W || gy < 0 || gy >= CFG.GRID_H) return false;
+  if (toolType === 'remove') {
+    const t = game.grid[gy][gx].type;
+    return t !== T.GRASS && t !== T.ENTRANCE;
+  }
+  if (toolType === 'path') {
+    return game.grid[gy][gx].type === T.GRASS;
+  }
+  const rd = RIDE_DATA[toolType];
+  if (!rd) return false;
+  const w = rd.w || 1, h = rd.h || 1;
+  for (let dy = 0; dy < h; dy++) {
+    for (let dx = 0; dx < w; dx++) {
+      const nx = gx + dx, ny = gy + dy;
+      if (nx < 0 || nx >= CFG.GRID_W || ny < 0 || ny >= CFG.GRID_H) return false;
+      if (game.grid[ny][nx].type !== T.GRASS) return false;
+    }
+  }
+  return game.money >= rd.cost;
+}
+
+function placeTile(toolType, gx, gy) {
+  if (toolType === 'remove') {
+    const t = game.grid[gy][gx];
+    if (t.type === T.GRASS || t.type === T.ENTRANCE) return false;
+    const refund = t.data?.refund || 0;
+    game.money += refund;
+    t.type = T.GRASS;
+    t.data = null;
+    playSound('build');
+    return true;
+  }
+  if (toolType === 'path') {
+    if (game.grid[gy][gx].type !== T.GRASS) return false;
+    game.grid[gy][gx] = { type: T.PATH, data: {} };
+    game.money -= 20;
+    playSound('build');
+    addFloat(gx * TS + TS, gy * TS + TS/2, '-$20', '#ff7f7f');
+    return true;
+  }
+  const rd = RIDE_DATA[toolType];
+  if (!rd) return false;
+  const w = rd.w || 1, h = rd.h || 1;
+  if (game.money < rd.cost) return false;
+  for (let dy = 0; dy < h; dy++) {
+    for (let dx = 0; dx < w; dx++) {
+      const nx = gx + dx, ny = gy + dy;
+      if (game.grid[ny][nx].type !== T.GRASS) return false;
+    }
+  }
+  game.money -= rd.cost;
+  const totalCost = rd.cost;
+  for (let dy = 0; dy < h; dy++) {
+    for (let dx = 0; dx < w; dx++) {
+      const nx = gx + dx, ny = gy + dy;
+      game.grid[ny][nx] = {
+        type: toolType,
+        data: {
+          name: rd.name,
+          income: rd.income,
+          occupancy: 0,
+          totalIncome: 0,
+          refund: Math.floor(totalCost * 0.5 / (w * h)),
+        }
+      };
+    }
+  }
+  playSound('build');
+  addFloat(gx * TS + TS/2, gy * TS - 4, `-$${rd.cost}`, '#ff7f7f');
+  addGuestLog(`🔨 Built ${rd.icon} ${rd.name}!`);
+  return true;
+}
+
+function spawnGuest() {
+  if (game.guests.length >= 35) return;
+  const guest = new Guest();
+  game.guests.push(guest);
+}
+
+// ============================================================
+// UPDATE
+// ============================================================
+let lastTime = 0;
+let spawnTimer = 0;
+let rideIncomeTimer = 0;
+let monthTimer = 0;
+
+function update(dt) {
+  if (dt > 0.2) dt = 0.2;
+
+  // Spawn guests based on rating
+  const spawnRate = Math.max(500, 3000 - game.parkRating * 2);
+  spawnTimer += dt * 1000;
+  if (spawnTimer >= spawnRate) {
+    spawnTimer = 0;
+    spawnGuest();
+  }
+
+  // Update guests
+  game.guests = game.guests.filter(g => g.update(dt));
+
+  // Ride income
+  rideIncomeTimer += dt * 1000;
+  if (rideIncomeTimer >= CFG.RIDE_INCOME_INTERVAL) {
+    rideIncomeTimer = 0;
+    let earned = 0;
+    for (let y = 0; y < CFG.GRID_H; y++) {
+      for (let x = 0; x < CFG.GRID_W; x++) {
+        const t = game.grid[y][x];
+        if (t.data && t.data.income > 0 && t.data.occupancy > 0) {
+          const inc = t.data.income;
+          game.totalIncome += inc;
+          game.money += inc;
+          earned += inc;
+        }
+      }
+    }
+    if (earned > 0) {
+      addFloat(CFG.TILE_SIZE * 2, CFG.TILE_SIZE * 2, `+$${earned}`, '#7fff7f');
+    }
+  }
+
+  // Month / year progression
+  monthTimer += dt;
+  if (monthTimer > 15) {
+    monthTimer = 0;
+    game.month++;
+    if (game.month > 12) {
+      game.month = 1;
+      game.year++;
+      game.lastYearIncome = game.totalIncome;
+      // Yearly maintenance costs
+      let costs = 0;
+      for (let y = 0; y < CFG.GRID_H; y++) {
+        for (let x = 0; x < CFG.GRID_W; x++) {
+          const t = game.grid[y][x].type;
+          if (RIDE_DATA[t]) costs += Math.floor(RIDE_DATA[t].cost * 0.05);
+        }
+      }
+      game.money -= costs;
+      if (costs > 0) addGuestLog(`📋 Yearly maintenance: $${costs}`);
+      addGuestLog(`📊 Year ${game.year-1} income: $${game.lastYearIncome}`);
+    }
+  }
+
+  // Update floating texts
+  for (let i = game.floats.length - 1; i >= 0; i--) {
+    const f = game.floats[i];
+    f.life -= dt;
+    f.y += f.vy * dt;
+    if (f.life <= 0) game.floats.splice(i, 1);
+  }
+
+  // Calculate park rating
+  updateParkRating();
+
+  // Happiness decay for guests not having fun
+  for (const g of game.guests) {
+    if (g.state === 'wandering') {
+      g.happiness -= 0.02 * dt;
+    }
+  }
+}
+
+function updateParkRating() {
+  if (game.guests.length === 0) {
+    game.parkRating = Math.max(100, game.parkRating - 0.2);
+    return;
+  }
+  const avgHappy = game.guests.reduce((s, g) => s + g.happiness, 0) / game.guests.length;
+  const guestFactor = Math.min(game.guests.length * 15, 300);
+  const rideCount = countRides();
+  const rideFactor = Math.min(rideCount * 50, 400);
+  const facilityPenalty = countFacilities() < 2 ? -100 : 0;
+  const pathBonus = countPaths() > 15 ? 50 : 0;
+  const decorBonus = Math.min(countDecor() * 20, 150);
+
+  const target = avgHappy * 5 + guestFactor + rideFactor + facilityPenalty + pathBonus + decorBonus - 200;
+  game.parkRating += (Math.max(0, target) - game.parkRating) * 0.02;
+  game.parkRating = Math.max(0, Math.min(1000, game.parkRating));
+}
+
+function countRides() {
+  const rideTypes = new Set([T.CAROUSEL, T.FERRIS_WHEEL, T.TEA_CUPS, T.ROLLER_COASTER, T.LOG_FLUME, T.BUMPER_CARS, T.DROP_TOWER, T.LOOP_COASTER, T.GHOST_HOUSE]);
+  let count = 0;
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      const t = game.grid[y][x].type;
+      if (rideTypes.has(t)) {
+        const isOrigin = (x === 0 || game.grid[y][x-1].type !== t) && (y === 0 || game.grid[y-1][x].type !== t);
+        if (isOrigin) count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countDecor() {
+  const decorTypes = new Set([T.TREE, T.FLOWER, T.LAMP]);
+  let count = 0;
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      if (decorTypes.has(game.grid[y][x].type)) count++;
+    }
+  }
+  return count;
+}
+
+function countShops() {
+  const shopTypes = new Set([T.BURGER_SHOP, T.DRINK_STALL, T.ICE_CREAM, T.SOUVENIR]);
+  const seen = new Set();
+  let count = 0;
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      const t = game.grid[y][x].type;
+      if (shopTypes.has(t) && !seen.has(t)) {
+        seen.add(t);
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countFacilities() {
+  const facTypes = new Set([T.TOILET, T.BENCH, T.BIN]);
+  const seen = new Set();
+  let count = 0;
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      const t = game.grid[y][x].type;
+      if (facTypes.has(t) && !seen.has(t)) {
+        seen.add(t);
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countPaths() {
+  let count = 0;
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      if (game.grid[y][x].type === T.PATH) count++;
+    }
+  }
+  return count;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+const TS = CFG.TILE_SIZE;
+
+function render() {
+  game.tick++;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw grid
+  for (let y = 0; y < CFG.GRID_H; y++) {
+    for (let x = 0; x < CFG.GRID_W; x++) {
+      const tile = game.grid[y][x];
+      const t = tile.type;
+      const px = x * TS, py = y * TS;
+
+      // Background
+      if (t === T.GRASS) {
+        const shade = (x + y) % 2 === 0 ? '#3a7d3a' : '#357035';
+        ctx.fillStyle = shade;
+        ctx.fillRect(px, py, TS, TS);
+        // Add random tiny flowers/dots on grass
+        if ((x * 7 + y * 13) % 5 === 0) {
+          ctx.fillStyle = 'rgba(255,255,200,0.15)';
+          ctx.fillRect(px + 6, py + 8, 2, 2);
+          ctx.fillRect(px + 20, py + 18, 2, 2);
+        }
+      } else if (t === T.PATH) {
+        ctx.fillStyle = '#b8976a';
+        ctx.fillRect(px, py, TS, TS);
+        ctx.fillStyle = '#c4a87a';
+        ctx.fillRect(px + 2, py + 2, TS - 4, TS - 4);
+        // Path edge detail
+        ctx.fillStyle = '#a08050';
+        ctx.fillRect(px, py, TS, 1);
+        ctx.fillRect(px, py + TS - 1, TS, 1);
+      } else if (t === T.ENTRANCE) {
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(px, py, TS, TS);
+        ctx.fillStyle = '#a0522d';
+        ctx.fillRect(px + 2, py + 2, TS - 4, TS - 4);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🚪', px + TS/2, py + TS - 4);
+        ctx.fillStyle = 'rgba(255,215,0,0.3)';
+        ctx.fillRect(px, py, TS, 2);
+      } else if (RIDE_DATA[t]) {
+        const rd = RIDE_DATA[t];
+        const isOrigin = (x === 0 || game.grid[y][x-1].type !== t) && (y === 0 || game.grid[y-1][x].type !== t);
+        if (isOrigin) {
+          const w = rd.w || 1, h = rd.h || 1;
+          // Building base
+          ctx.fillStyle = rd.color;
+          ctx.fillRect(px, py, w * TS, h * TS);
+          // Inner highlight
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.fillRect(px + 3, py + 3, w * TS - 6, h * TS - 6);
+          // Border
+          ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px, py, w * TS, h * TS);
+          // Roof
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          ctx.fillRect(px, py, w * TS, 3);
+          // Shadow at bottom
+          ctx.fillStyle = 'rgba(0,0,0,0.1)';
+          ctx.fillRect(px, py + h * TS - 3, w * TS, 3);
+
+          // Pulse animation for rides with occupancy
+          const occ = tile.data?.occupancy || 0;
+          if (occ > 0) {
+            const pulse = Math.sin(game.tick * 0.05) * 0.15 + 0.85;
+            ctx.fillStyle = `rgba(255,255,200,${0.1 * pulse})`;
+            ctx.fillRect(px + 2, py + 2, w * TS - 4, h * TS - 4);
+          }
+
+          // Icon (with slight bounce)
+          const bounce = occ > 0 ? Math.sin(game.tick * 0.08) * 2 : 0;
+          ctx.font = `${Math.min(w, h) * 14}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(rd.icon, px + w * TS/2, py + h * TS/2 - 6 + bounce);
+          
+          // Name
+          ctx.fillStyle = '#fff';
+          ctx.font = '9px monospace';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(rd.name, px + w * TS/2, py + h * TS - 2);
+          
+          // Occupancy badge
+          if (occ > 0) {
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '8px monospace';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`👥${occ}`, px + w * TS/2, py + 2);
+          }
+        }
+      } else if (t === T.TREE) {
+        ctx.fillStyle = '#2d5a1e';
+        ctx.fillRect(px + 4, py + 12, 4, TS - 12);
+        ctx.fillStyle = '#3a8a3a';
+        ctx.beginPath();
+        ctx.arc(px + 6, py + 8, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a9a4a';
+        ctx.beginPath();
+        ctx.arc(px + 10, py + 6, 7, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (t === T.FLOWER) {
+        ctx.fillStyle = '#3a7a3a';
+        ctx.fillRect(px + 7, py + 16, 2, 10);
+        const hue = ((x * 37 + y * 53) % 360);
+        ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+        ctx.beginPath();
+        ctx.arc(px + 8, py + 14, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffeb3b';
+        ctx.beginPath();
+        ctx.arc(px + 8, py + 14, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (t === T.LAMP) {
+        ctx.fillStyle = '#8a7a6a';
+        ctx.fillRect(px + 6, py + 8, 4, TS - 8);
+        ctx.fillStyle = '#cd853f';
+        ctx.fillRect(px + 4, py + 4, 8, 6);
+        ctx.fillStyle = '#ffeb3b';
+        const glow = Math.sin(game.tick * 0.03) * 0.3 + 0.7;
+        ctx.globalAlpha = glow * 0.3;
+        ctx.beginPath();
+        ctx.arc(px + 8, py + 7, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= CFG.GRID_W; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * TS, 0);
+    ctx.lineTo(x * TS, CFG.GRID_H * TS);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= CFG.GRID_H; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * TS);
+    ctx.lineTo(CFG.GRID_W * TS, y * TS);
+    ctx.stroke();
+  }
+
+  // Draw guests
+  for (const g of game.guests) {
+    // Body
+    ctx.beginPath();
+    ctx.arc(g.px, g.py, g.size, 0, Math.PI * 2);
+    ctx.fillStyle = g.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Guest thought bubble
+    let thought = '';
+    if (g.state === 'riding') thought = '🎢';
+    else if (g.state === 'eating') thought = '🍔';
+    else if (g.state === 'drinking') thought = '🥤';
+    else if (g.state === 'sitting') thought = '😌';
+    else if (g.state === 'leaving') thought = '🚶';
+    else if (g.happiness < 30) thought = '😟';
+    else if (g.happiness > 75 && Math.random() < 0.02) thought = '😊';
+
+    if (thought) {
+      ctx.font = '8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillText(thought, g.px + 1, g.py - g.size - 5);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(thought, g.px, g.py - g.size - 6);
+    }
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.beginPath();
+    ctx.ellipse(g.px + 1, g.py + g.size - 1, g.size * 0.8, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Floating text
+  for (const f of game.floats) {
+    const alpha = Math.max(0, f.life / f.maxLife);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = f.color;
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = 1;
+
+  // Selected tile info highlight
+  if (game.selectedTileX >= 0 && game.selectedTileY >= 0) {
+    const sx = game.selectedTileX * TS, sy = game.selectedTileY * TS;
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3, 3]);
+    ctx.strokeRect(sx, sy, TS, TS);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,215,0,0.1)';
+    ctx.fillRect(sx, sy, TS, TS);
+  }
+
+  // Hover preview
+  if (game.mouseTileX >= 0 && game.mouseTileX < CFG.GRID_W && game.mouseTileY >= 0 && game.mouseTileY < CFG.GRID_H) {
+    const toolType = game.selectedTool;
+    const gx = game.mouseTileX, gy = game.mouseTileY;
+    const valid = canPlace(toolType, gx, gy);
+
+    if (toolType === 'path' || toolType === 'remove') {
+      ctx.fillStyle = valid ? 'rgba(255,255,255,0.25)' : 'rgba(255,0,0,0.25)';
+      ctx.fillRect(gx * TS, gy * TS, TS, TS);
+      ctx.strokeStyle = valid ? 'rgba(255,255,255,0.5)' : 'rgba(255,0,0,0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(gx * TS, gy * TS, TS, TS);
+    } else if (RIDE_DATA[toolType]) {
+      const rd = RIDE_DATA[toolType];
+      const w = rd.w || 1, h = rd.h || 1;
+      ctx.fillStyle = valid ? 'rgba(255,255,255,0.2)' : 'rgba(255,0,0,0.2)';
+      ctx.fillRect(gx * TS, gy * TS, w * TS, h * TS);
+      ctx.strokeStyle = valid ? 'rgba(255,255,255,0.6)' : 'rgba(255,0,0,0.6)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(gx * TS, gy * TS, w * TS, h * TS);
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Update UI
+  updateUI();
+}
+
+function updateUI() {
+  document.getElementById('moneyDisplay').textContent = '$' + Math.floor(game.money);
+  document.getElementById('ratingDisplay').textContent = Math.floor(game.parkRating);
+  document.getElementById('guestsDisplay').textContent = game.guests.length;
+  document.getElementById('yearDisplay').textContent = `Year ${game.year}, Month ${game.month}`;
+  document.getElementById('rideCount').textContent = countRides();
+  document.getElementById('shopCount').textContent = countShops();
+  document.getElementById('facilityCount').textContent = countFacilities();
+  document.getElementById('pathCount').textContent = countPaths();
+  document.getElementById('incomeDisplay').textContent = '$' + Math.floor(game.totalIncome);
+
+  // Pause & speed indicators
+  document.getElementById('pauseIndicator').textContent = game.paused ? '⏸ Paused' : '▶ Running';
+  document.getElementById('speedIndicator').textContent = game.speed + 'x';
+
+  // Rating color
+  const ratingEl = document.getElementById('ratingDisplay');
+  if (game.parkRating > 700) ratingEl.style.color = '#7fff7f';
+  else if (game.parkRating > 400) ratingEl.style.color = '#ffd700';
+  else ratingEl.style.color = '#ff7f7f';
+
+  // Build info
+  const toolType = game.selectedTool;
+  const infoEl = document.getElementById('build-info');
+  if (toolType === 'path') {
+    infoEl.innerHTML = '<div class="info-row"><span class="label">🟫 Path</span><span class="value" style="color:#7fff7f">$20</span></div>';
+  } else if (toolType === 'remove') {
+    infoEl.innerHTML = '<div class="info-row"><span class="label">❌ Remove</span><span class="value" style="color:#ff7f7f">Refund 50%</span></div>';
+  } else if (RIDE_DATA[toolType]) {
+    const rd = RIDE_DATA[toolType];
+    infoEl.innerHTML = `
+      <div class="info-row"><span class="label">${rd.icon} ${rd.name}</span><span class="value" style="color:#7fff7f">$${rd.cost}</span></div>
+      <div class="info-row"><span class="label">Income</span><span class="value">$${rd.income}/tick</span></div>
+      <div class="info-row"><span class="label">Size</span><span class="value">${rd.w}x${rd.h}</span></div>
+      <div class="info-row" style="font-size:10px;color:#8899aa">${rd.desc || ''}</div>
+    `;
+  }
+}
+
+// ============================================================
+// TOOLBAR BUILD
+// ============================================================
+function buildToolbar() {
+  const toolbar = document.getElementById('toolbar');
+  toolbar.innerHTML = '';
+  let currentCat = '';
+  for (const tool of TOOLS) {
+    if (tool.category !== currentCat) {
+      currentCat = tool.category;
+      const label = document.createElement('div');
+      label.className = 'tool-group-label';
+      label.textContent = CAT_LABELS[currentCat] || currentCat;
+      toolbar.appendChild(label);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'tool-btn';
+    btn.dataset.tool = tool.type;
+    const rd = RIDE_DATA[tool.type];
+    const label = rd ? rd.name : (tool.type === 'path' ? 'Path' : tool.type === 'remove' ? 'Remove' : tool.type);
+    const icon = tool.icon || '';
+    const cost = tool.cost !== undefined ? tool.cost : (rd ? rd.cost : 0);
+    btn.innerHTML = `<span class="icon">${icon}</span>${label}${cost > 0 ? `<span class="cost">$${cost}</span>` : ''}`;
+    if (tool.type === game.selectedTool) btn.classList.add('selected');
+    btn.addEventListener('click', () => selectTool(tool.type));
+    toolbar.appendChild(btn);
+  }
+}
+
+function selectTool(type) {
+  game.selectedTool = type;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll(`.tool-btn[data-tool="${type}"]`).forEach(b => b.classList.add('selected'));
+}
+
+// ============================================================
+// SOUND SYSTEM
+// ============================================================
+const soundCache = {};
+let soundInitialized = false;
+let bgMusic = null;
+
+function initSounds() {
+  if (soundInitialized) return;
+  soundInitialized = true;
+
+  bgMusic = new Audio('music__20260628_203533.mp3');
+  bgMusic.loop = true;
+  bgMusic.volume = 0.3;
+
+  const sfx = {
+    build: 'sfx_Const_20260628_203536.mp3',
+    happy: 'sfx_Happy_20260628_203538.mp3',
+    cash: 'sfx_Cash__20260628_203539.mp3',
+  };
+  for (const [key, file] of Object.entries(sfx)) {
+    const audio = new Audio(file);
+    audio.volume = 0.5;
+    soundCache[key] = audio;
+  }
+}
+
+function playSound(name) {
+  if (!game.soundOn) return;
+  if (soundCache[name]) {
+    const a = soundCache[name].cloneNode();
+    a.volume = 0.5;
+    a.play().catch(() => {});
+  }
+  if (name === 'build') {
+    if (soundCache.cash) {
+      const a = soundCache.cash.cloneNode();
+      a.volume = 0.3;
+      a.play().catch(() => {});
+    }
+  }
+}
+
+function toggleSound() {
+  game.soundOn = !game.soundOn;
+  document.getElementById('soundIndicator').textContent = game.soundOn ? '🔊 ON' : '🔇 OFF';
+  if (!game.soundOn && bgMusic) {
+    bgMusic.pause();
+  } else if (game.soundOn && bgMusic) {
+    bgMusic.play().catch(() => {});
+  }
+}
+
+// ============================================================
+// EVENT HANDLING
+// ============================================================
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  game.mouseTileX = Math.floor(mx / TS);
+  game.mouseTileY = Math.floor(my / TS);
+});
+
+canvas.addEventListener('mouseleave', () => {
+  game.mouseTileX = -1;
+  game.mouseTileY = -1;
+});
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const gx = Math.floor(mx / TS);
+  const gy = Math.floor(my / TS);
+  if (gx < 0 || gx >= CFG.GRID_W || gy < 0 || gy >= CFG.GRID_H) return;
+
+  const toolType = game.selectedTool;
+  if (canPlace(toolType, gx, gy)) {
+    placeTile(toolType, gx, gy);
+    game.selectedTileX = -1;
+  } else {
+    game.selectedTileX = gx;
+    game.selectedTileY = gy;
+    showTileInfo(gx, gy);
+  }
+});
+
+function showTileInfo(gx, gy) {
+  const tile = game.grid[gy][gx];
+  const t = tile.type;
+  const infoEl = document.getElementById('build-info');
+
+  if (t === T.GRASS) {
+    infoEl.innerHTML = '<div class="info-row"><span class="label">🌿 Grass</span></div><div class="info-row" style="font-size:10px;color:#667">Build paths &amp; attractions here</div>';
+  } else if (t === T.PATH) {
+    infoEl.innerHTML = '<div class="info-row"><span class="label">🟫 Path</span></div>';
+  } else if (t === T.ENTRANCE) {
+    infoEl.innerHTML = '<div class="info-row"><span class="label">🚪 Entrance</span></div><div class="info-row" style="font-size:10px;color:#667">Guests enter here</div>';
+  } else if (RIDE_DATA[t]) {
+    const rd = RIDE_DATA[t];
+    const income = tile.data?.totalIncome || 0;
+    const occ = tile.data?.occupancy || 0;
+    infoEl.innerHTML = `
+      <div class="info-row"><span class="label">${rd.icon} ${rd.name}</span></div>
+      <div class="info-row"><span class="label">Income</span><span class="value">$${rd.income}/tick</span></div>
+      <div class="info-row"><span class="label">Occupancy</span><span class="value">${occ} guests</span></div>
+      <div class="info-row"><span class="label">Total Earned</span><span class="value">$${income}</span></div>
+      <div class="info-row" style="font-size:10px;color:#667">${rd.desc || ''}</div>
+    `;
+  } else if (t === T.TREE || t === T.FLOWER || t === T.LAMP) {
+    const names = { [T.TREE]: '🌳 Tree', [T.FLOWER]: '🌷 Flowers', [T.LAMP]: '💡 Lamp Post' };
+    infoEl.innerHTML = `<div class="info-row"><span class="label">${names[t] || 'Decoration'}</span></div><div class="info-row" style="font-size:10px;color:#667">Beautifies the park</div>`;
+  }
+}
+
+// Right click to remove
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const gx = Math.floor(mx / TS);
+  const gy = Math.floor(my / TS);
+  if (gx < 0 || gx >= CFG.GRID_W || gy < 0 || gy >= CFG.GRID_H) return;
+  if (canPlace('remove', gx, gy)) {
+    placeTile('remove', gx, gy);
+  }
+});
+
+// Sound toggle
+document.getElementById('bottom-bar').addEventListener('dblclick', toggleSound);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === '1') selectTool('path');
+  else if (e.key === '2') selectTool('remove');
+  else if (e.key === 's' || e.key === 'S') toggleSound();
+  else if (e.key === ' ') { e.preventDefault(); game.paused = !game.paused; }
+  else if (e.key === '+' || e.key === '=') { game.speed = Math.min(5, game.speed + 0.5); }
+  else if (e.key === '-') { game.speed = Math.max(0.5, game.speed - 0.5); }
+});
+
+// ============================================================
+// GAME LOOP
+// ============================================================
+function gameLoop(timestamp) {
+  let dt = lastTime === 0 ? 0.016 : (timestamp - lastTime) / 1000;
+  lastTime = timestamp;
+  if (dt > 0.1) dt = 0.016;
+
+  if (!game.paused) {
+    update(dt * game.speed);
+  }
+  render();
+
+  requestAnimationFrame(gameLoop);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initGrid();
+buildToolbar();
+
+// Init sounds on first interaction
+document.addEventListener('click', () => {
+  if (!soundInitialized) {
+    initSounds();
+    if (game.soundOn && bgMusic) {
+      bgMusic.play().catch(() => {});
+    }
+  }
+}, { once: true });
+
+gameLoop(0);
+
+console.log('🎢 Theme Park Tycoon loaded!');
+console.log('Click to build | Right-click to remove | S=Sound | Space=Pause | +/-=Speed');
+</script>
+</body>
+</html>

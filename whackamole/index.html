@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whack-a-Mole</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .game-wrapper {
+    background: linear-gradient(180deg, #2d5a27, #1d3b1a);
+    border-radius: 48px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 2px 4px rgba(255,255,255,.1);
+    border: 3px solid #3a7a33;
+    position: relative;
+  }
+  .game-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 56px;
+    background: linear-gradient(135deg, #4a9a42, #2d5a27, #4a9a42);
+    z-index: -1;
+    filter: blur(4px);
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 8px;
+  }
+  .score-box, .timer-box, .high-box {
+    background: rgba(0,0,0,.4);
+    border-radius: 16px;
+    padding: 8px 20px;
+    text-align: center;
+    border: 2px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(4px);
+  }
+  .score-box label, .timer-box label, .high-box label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #8bc34a;
+    font-weight: 600;
+  }
+  .score-box span, .timer-box span, .high-box span {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .timer-box span.warning { color: #ff6b6b; animation: pulse 0.5s infinite alternate; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 8px;
+  }
+
+  .hole {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(ellipse at center, #3a2a1a 0%, #2a1a0a 60%, #1a0a00 100%);
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: inset 0 10px 20px rgba(0,0,0,.8), 0 4px 8px rgba(0,0,0,.4);
+    transition: transform 0.1s;
+  }
+  .hole:active { transform: scale(0.95); }
+  .hole::after {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 30%;
+    background: radial-gradient(ellipse, rgba(0,0,0,.3), transparent);
+    border-radius: 50%;
+  }
+
+  .mole {
+    position: absolute;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    transition: bottom 0.15s ease-out;
+    z-index: 2;
+  }
+  .hole.active .mole { bottom: 10%; }
+
+  .mole-body {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  .mole-body svg { width: 100%; height: 100%; display: block; }
+
+  .mole-face {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .whacked .mole {
+    bottom: 8%;
+    transition: bottom 0.05s;
+  }
+  .whacked .mole-body { animation: spinWhack 0.3s ease-out forwards; }
+
+  @keyframes spinWhack {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(-15deg) scale(0.9); }
+    100% { transform: rotate(0deg) scale(1); opacity: 0.5; }
+  }
+
+  @keyframes popIn {
+    0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
+    70% { transform: translateX(-50%) scale(1.1); }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+  .hole.active .mole-body { animation: popIn 0.2s ease-out; }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    border-radius: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .overlay.show { opacity: 1; pointer-events: all; }
+
+  .overlay h1 {
+    font-size: 48px;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,.5);
+  }
+  .overlay p {
+    color: #aaa;
+    font-size: 18px;
+  }
+  .overlay .final-score {
+    font-size: 72px;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 0 0 30px rgba(255,215,0,.4);
+  }
+
+  .btn {
+    padding: 14px 48px;
+    font-size: 20px;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1a1a2e;
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,215,0,.4); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-restart {
+    background: linear-gradient(135deg, #4ecdc4, #44b3a8);
+    color: #fff;
+  }
+  .btn-restart:hover { box-shadow: 0 8px 25px rgba(78,205,196,.4); }
+
+  .combo-text {
+    position: fixed;
+    pointer-events: none;
+    font-size: 36px;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255,215,0,.6);
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 20;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+  }
+
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    z-index: 19;
+    animation: particleFly 0.6s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-60px) translateX(var(--dx, 20px)) scale(0); }
+  }
+
+  .miss-effect {
+    position: fixed;
+    pointer-events: none;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff6b6b;
+    text-shadow: 0 0 15px rgba(255,107,107,.4);
+    animation: missFloat 0.5s ease-out forwards;
+    z-index: 20;
+  }
+  @keyframes missFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
+  }
+
+  @media (max-width: 500px) {
+    .game-wrapper { padding: 16px; border-radius: 32px; }
+    .hole { width: 90px; height: 90px; }
+    .mole { width: 60px; height: 60px; }
+    .grid { gap: 12px; }
+    .overlay h1 { font-size: 32px; }
+    .overlay .final-score { font-size: 48px; }
+    .header { gap: 8px; }
+    .score-box, .timer-box, .high-box { padding: 6px 12px; }
+    .score-box span, .timer-box span, .high-box span { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game-wrapper">
+  <div class="header">
+    <div class="score-box">
+      <label>Score</label>
+      <span id="score">0</span>
+    </div>
+    <div class="timer-box">
+      <label>Time</label>
+      <span id="timer">30</span>
+    </div>
+    <div class="high-box">
+      <label>Best</label>
+      <span id="highScore">0</span>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="hole" data-index="0"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="1"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="2"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="3"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="4"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="5"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="6"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="7"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+    <div class="hole" data-index="8"><div class="mole"><div class="mole-body"><?xml version="1.0" encoding="utf-8"?><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="50" rx="28" ry="26" fill="#8B5E3C"/><ellipse cx="40" cy="42" rx="22" ry="18" fill="#C4956A"/><circle cx="32" cy="38" r="5" fill="#222"/><circle cx="48" cy="38" r="5" fill="#222"/><circle cx="33" cy="37" r="2" fill="#fff"/><circle cx="49" cy="37" r="2" fill="#fff"/><ellipse cx="40" cy="48" rx="6" ry="4" fill="#222"/><ellipse cx="40" cy="47" rx="3" ry="2" fill="#E87461"/></svg></div></div></div>
+  </div>
+
+  <div class="overlay show" id="overlay">
+    <h1>🥷 Whack-a-Mole</h1>
+    <p>Whack as many moles as you can!</p>
+    <button class="btn" id="startBtn">Start Game</button>
+  </div>
+</div>
+
+<script>
+  const holes = document.querySelectorAll('.hole');
+  const scoreEl = document.getElementById('score');
+  const timerEl = document.getElementById('timer');
+  const highScoreEl = document.getElementById('highScore');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+
+  let score = 0;
+  let timeLeft = 30;
+  let timer = null;
+  let moleInterval = null;
+  let gameActive = false;
+  let combo = 0;
+  let highScore = parseInt(localStorage.getItem('whackHigh') || '0');
+  highScoreEl.textContent = highScore;
+
+  const sfx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function playTone(freq, duration, type = 'sine', vol = 0.15) {
+    const osc = sfx.createOscillator();
+    const gain = sfx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, sfx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, sfx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(sfx.destination);
+    osc.start();
+    osc.stop(sfx.currentTime + duration);
+  }
+
+  function whackSound() { playTone(600, 0.06, 'square', 0.12); playTone(300, 0.08, 'square', 0.08); }
+  function missSound() { playTone(200, 0.1, 'sawtooth', 0.06); }
+  function comboUpSound() { playTone(800, 0.06, 'sine', 0.1); setTimeout(() => playTone(1000, 0.08, 'sine', 0.1), 60); }
+  function gameOverSound() { playTone(500, 0.15, 'sine', 0.12); setTimeout(() => playTone(400, 0.15, 'sine', 0.1), 150); setTimeout(() => playTone(300, 0.3, 'sine', 0.1), 300); }
+  function startSound() { playTone(400, 0.1, 'sine', 0.1); setTimeout(() => playTone(600, 0.1, 'sine', 0.1), 100); setTimeout(() => playTone(800, 0.15, 'sine', 0.1), 200); }
+
+  function spawnMole() {
+    if (!gameActive) return;
+    const available = Array.from(holes).filter(h => !h.classList.contains('active') && !h.classList.contains('whacked'));
+    if (available.length < 3) return;
+    const activeCount = Math.min(1 + Math.floor((30 - timeLeft) / 8), 4);
+    const toActivate = Math.min(activeCount, available.length);
+    for (let i = 0; i < toActivate; i++) {
+      const idx = Math.floor(Math.random() * available.length);
+      const hole = available.splice(idx, 1)[0];
+      hole.classList.add('active');
+      const duration = Math.max(600, 1800 - (30 - timeLeft) * 40);
+      setTimeout(() => { if (gameActive) hideMole(hole); }, duration);
+    }
+  }
+
+  function hideMole(hole) {
+    hole.classList.remove('active', 'whacked');
+  }
+
+  function whack(e) {
+    if (!gameActive) return;
+    const hole = e.currentTarget;
+    if (!hole.classList.contains('active') || hole.classList.contains('whacked')) {
+      if (!hole.classList.contains('whacked')) {
+        missSound();
+        combo = 0;
+        showMissEffect(e);
+      }
+      return;
+    }
+    hole.classList.remove('active');
+    hole.classList.add('whacked');
+    whackSound();
+    combo++;
+    const points = combo >= 5 ? 20 : combo >= 3 ? 15 : 10;
+    score += points;
+    scoreEl.textContent = score;
+    if (combo >= 3) comboUpSound();
+    if (combo >= 2) showCombo(e);
+    showParticles(e);
+    setTimeout(() => hole.classList.remove('whacked'), 200);
+  }
+
+  function showCombo(e) {
+    const el = document.createElement('div');
+    el.className = 'combo-text';
+    el.textContent = `🔥 ${combo}x`;
+    el.style.left = (e.clientX - 30) + 'px';
+    el.style.top = (e.clientY - 40) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  function showMissEffect(e) {
+    const el = document.createElement('div');
+    el.className = 'miss-effect';
+    el.textContent = '💨 Miss!';
+    el.style.left = (e.clientX - 40) + 'px';
+    el.style.top = (e.clientY - 30) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 500);
+  }
+
+  function showParticles(e) {
+    const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#ffaa00', '#fff'];
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = e.clientX + 'px';
+      p.style.top = e.clientY + 'px';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+      p.style.width = (4 + Math.random() * 8) + 'px';
+      p.style.height = p.style.width;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 600);
+    }
+  }
+
+  function updateTimer() {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+    if (timeLeft <= 5) timerEl.classList.add('warning');
+    if (timeLeft <= 0) endGame();
+  }
+
+  function startGame() {
+    score = 0; timeLeft = 30; combo = 0;
+    scoreEl.textContent = '0';
+    timerEl.textContent = '30';
+    timerEl.classList.remove('warning');
+    overlay.classList.remove('show');
+    holes.forEach(h => h.classList.remove('active', 'whacked'));
+    gameActive = true;
+    startSound();
+    timer = setInterval(updateTimer, 1000);
+    moleInterval = setInterval(spawnMole, 500);
+    spawnMole();
+  }
+
+  function endGame() {
+    gameActive = false;
+    gameOverSound();
+    clearInterval(timer);
+    clearInterval(moleInterval);
+    holes.forEach(h => h.classList.remove('active', 'whacked'));
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('whackHigh', highScore.toString());
+      highScoreEl.textContent = highScore;
+    }
+    document.querySelector('.overlay h1').textContent = 'Game Over!';
+    document.querySelector('.overlay p').textContent = score >= highScore ? '🎉 New High Score!' : 'Try again!';
+    document.querySelector('.final-score')?.remove();
+    const fs = document.createElement('div');
+    fs.className = 'final-score';
+    fs.textContent = score;
+    document.querySelector('.overlay p').after(fs);
+    startBtn.textContent = 'Play Again';
+    overlay.classList.add('show');
+  }
+
+  holes.forEach(h => h.addEventListener('click', whack));
+  startBtn.addEventListener('click', startGame);
+</script>
+</body>
+</html>
