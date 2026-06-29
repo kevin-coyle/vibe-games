@@ -102,6 +102,44 @@
     .themepark h2 { color: #ff9800; }
     .whack h2 { color: #e91e63; }
     .zork h2 { color: #4caf50; }
+    .clue h2 { color: #c4a35a; }
+
+    .card.featured {
+      position: relative;
+      overflow: hidden;
+      border-color: #c4a35a;
+      background: linear-gradient(135deg, #1a1a2e 0%, #1e182e 100%);
+    }
+
+    .card.featured:hover {
+      border-color: #ffd700;
+      box-shadow: 0 12px 40px rgba(196, 163, 90, 0.35);
+    }
+
+    .card.featured .badge {
+      position: absolute;
+      top: 18px;
+      right: -32px;
+      z-index: 1;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #0f0f1a;
+      padding: 0.2rem 2.5rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      transform: rotate(45deg);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .card.featured .card-img {
+      width: calc(100% + 4rem);
+      margin: -2rem -2rem 1.5rem -2rem;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 2px solid #c4a35a;
+    }
 
     footer {
       margin-top: 3rem;
@@ -112,7 +150,7 @@
 </head>
 <body>
   <h1>Kevin's Game Collection</h1>
-  <p class="subtitle">Six browser-based games — pick your adventure</p>
+  <p class="subtitle">Seven browser-based games — pick your adventure</p>
 
   <div class="games">
     <a href="mariobros/index.html" class="card mario">
@@ -173,6 +211,18 @@
       </div>
       <p>A terminal-style interactive fiction adventure inspired by the Infocom classic. Explore 11 rooms, collect items, solve the world, and watch the auto-map grow — all with a CRT monitor aesthetic.</p>
       <div class="controls">Type commands &middot; n/s/e/w/u/d to move</div>
+    </a>
+
+    <a href="clue/index.html" class="card clue featured">
+      <span class="badge">TOP GAME</span>
+      <img class="card-img" src="clue/img/intro-mansion.png" alt="Tudor Mansion">
+      <h2>Cluedo</h2>
+      <div class="meta">
+        <span class="tag">Mystery</span>
+        <span class="tag">Board Game</span>
+      </div>
+      <p>A dreadful murder has occurred at Tudor Mansion! Six suspects, six weapons, nine rooms. Make suggestions and accuse the killer in this classic whodunit.</p>
+      <div class="controls">Click to move &middot; Make suggestions &middot; Accuse!</div>
     </a>
   </div>
 

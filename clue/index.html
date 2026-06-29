@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLUEDO - The Great Mansion Mystery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="game-header">
+      <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;position:relative;">
+        <h1><span class="title-clue">CLUE</span><span class="title-do">DO</span></h1>
+        <button id="help-btn" class="btn-help" title="How to Play">?</button>
+      </div>
+      <p class="subtitle">The Great Mansion Mystery</p>
+    </header>
+
+    <div id="game-container">
+      <div id="board-area">
+        <div id="game-board"></div>
+        <div id="dice-area">
+          <button id="roll-dice-btn" class="btn btn-primary">🎲 Roll Dice</button>
+          <div id="dice-result"></div>
+        </div>
+      </div>
+
+      <div id="sidebar">
+        <div id="current-turn">
+          <h3>Current Turn</h3>
+          <div id="turn-indicator"></div>
+        </div>
+
+        <div id="player-info">
+          <h3>Your Cards</h3>
+          <div id="player-cards"></div>
+        </div>
+
+        <div id="notebook-section">
+          <h3>🔍 Notebook</h3>
+          <div id="notebook">
+            <div class="note-category">
+              <h4>Suspects</h4>
+              <div id="suspect-notes" class="note-grid"></div>
+            </div>
+            <div class="note-category">
+              <h4>Weapons</h4>
+              <div id="weapon-notes" class="note-grid"></div>
+            </div>
+            <div class="note-category">
+              <h4>Rooms</h4>
+              <div id="room-notes" class="note-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="action-buttons" style="display:none;">
+          <button id="suggest-btn" class="btn btn-secondary">🔎 Make Suggestion</button>
+          <button id="accuse-btn" class="btn btn-danger">⚖️ Make Accusation</button>
+          <button id="end-turn-btn" class="btn">End Turn</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="message-area">
+      <div id="game-messages"></div>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-content">
+      <div id="modal-header">
+        <h2 id="modal-title"></h2>
+        <button id="modal-close" class="btn-close">&times;</button>
+      </div>
+      <div id="modal-body"></div>
+      <div id="modal-footer"></div>
+    </div>
+  </div>
+
+  <div id="intro-overlay" class="hidden">
+    <div id="intro-scene" class="intro-scene"></div>
+    <div id="intro-fog" class="intro-fog"></div>
+    <div id="intro-vignette" class="intro-vignette"></div>
+    <div id="intro-text-container">
+      <div id="intro-text"></div>
+      <div id="intro-subtitle"></div>
+    </div>
+    <div id="intro-title" class="hidden">
+      <h1><span class="title-clue">CLUE</span><span class="title-do">DO</span></h1>
+      <p class="subtitle">The Great Mansion Mystery</p>
+    </div>
+    <div id="intro-logo-container" class="hidden">
+      <div id="intro-logo-label">A</div>
+      <img id="intro-logo-img" src="https://drutek.com/images/logo_dark.svg" alt="Logo">
+      <div id="intro-logo-sub">Game</div>
+    </div>
+    <button id="intro-skip" class="intro-skip">Skip ▶</button>
+    <button id="intro-start-game" class="intro-start-game hidden"><span>Start Investigation →</span></button>
+    <div id="intro-lightning"></div>
+    <div id="intro-start-prompt">
+      <div class="isp-content">
+        <div class="isp-icon">🎬</div>
+        <div class="isp-text">Click anywhere to begin</div>
+        <div class="isp-sub">A Cluedo Mystery</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="start-screen" class="hidden">
+    <div class="start-content">
+      <h1><span class="title-clue">CLUE</span><span class="title-do">DO</span></h1>
+      <p class="subtitle">The Great Mansion Mystery</p>
+      <p class="tagline">A dreadful murder has occurred at Tudor Mansion!</p>
+      <p class="instruction">Choose your detective to investigate:</p>
+      <div id="character-select"></div>
+      <button id="start-game-btn" class="btn btn-primary btn-large">Start Investigation!</button>
+      <button id="resume-game-btn" class="btn btn-primary btn-large hidden" style="margin-top:0.5rem;">▶ Resume Game</button>
+      <button id="how-to-play-btn" class="btn" style="margin-top:0.5rem;">📖 How to Play</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
