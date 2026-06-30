@@ -386,3 +386,159 @@ select:focus {
   color: var(--ink);
   margin: 0 0 22px;
 }
+
+/* ---- Responsive: tablets & below ---------------------------------------- */
+
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+
+  .app-window {
+    width: 100%;
+    height: 100%;
+  }
+
+  .splash-window {
+    width: 90%;
+    max-width: 420px;
+  }
+
+  .splash-title {
+    font-size: 28px;
+  }
+
+  .splash-body {
+    padding: 20px 16px 24px;
+  }
+
+  .content {
+    flex-direction: column;
+  }
+
+  .recipe-list {
+    flex: none;
+    width: 100%;
+    height: 200px;
+  }
+
+  .recipe-detail {
+    height: 300px;
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+
+  #search {
+    min-width: 120px;
+  }
+}
+
+/* ---- Responsive: phones ------------------------------------------------ */
+
+@media (max-width: 480px) {
+  body {
+    padding: 4px;
+  }
+
+  .window {
+    padding: 1px;
+  }
+
+  .title-bar-text {
+    font-size: 11px;
+  }
+
+  .title-btn {
+    width: 22px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .toolbar .btn {
+    flex: 1 1 auto;
+    font-size: 11px;
+    padding: 4px 8px;
+    min-height: 24px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .filter-bar label {
+    font-size: 11px;
+  }
+
+  #search {
+    min-width: 0;
+  }
+
+  .content {
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .recipe-list {
+    height: 160px;
+    font-size: 13px;
+  }
+
+  .recipe-detail {
+    height: 280px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .recipe-detail h1 {
+    font-size: 20px;
+  }
+
+  .recipe-detail h2 {
+    font-size: 16px;
+  }
+
+  .menu-bar {
+    flex-wrap: wrap;
+    gap: 1px;
+  }
+
+  .menu-item {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .splash-title {
+    font-size: 24px;
+  }
+
+  .splash-body {
+    padding: 16px 12px 20px;
+  }
+
+  .splash-sub {
+    font-size: 12px;
+  }
+
+  .splash-note {
+    font-size: 12px;
+  }
+
+  .btn-large {
+    font-size: 14px;
+    padding: 8px 20px;
+  }
+
+  .status-cell {
+    font-size: 10px;
+    padding: 2px 5px;
+  }
+}
