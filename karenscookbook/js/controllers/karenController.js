@@ -16,7 +16,7 @@
  * MainWindow.cpp, with timing constants preserved.
  */
 
-const STORY_ON_SELECTION = 3; // the Nth recipe they pick gets the story instead
+const STORY_ON_SELECTION = 5; // the Nth recipe they pick gets the story instead
 const REACTIONS = ['delicious', 'tasty', 'goodchoice'];
 const SCOLDS = ['rude', 'notfinished', 'letmefinish', 'mykids'];
 const MAX_INTERRUPTIONS = 5; // on the 5th, she leaves
