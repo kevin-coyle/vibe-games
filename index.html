@@ -107,6 +107,78 @@
     .karen .card-img { height: 180px; object-position: center 30%; }
     .fishing h2 { color: #2E86AB; }
 
+    .arcade-btn {
+      display: block;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 2.5rem;
+      padding: 1.6rem 2rem;
+      border-radius: 16px;
+      text-align: center;
+      text-decoration: none;
+      background: linear-gradient(135deg, #1a0a2e, #2a0a4e);
+      border: 2px solid #ff00ff;
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.15), inset 0 0 30px rgba(255, 0, 255, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arcade-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(255,0,255,0.05), transparent, rgba(0,255,255,0.05), transparent);
+      animation: rotate-glow 6s linear infinite;
+    }
+
+    @keyframes rotate-glow {
+      to { transform: rotate(360deg); }
+    }
+
+    .arcade-btn:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 0 60px rgba(255, 0, 255, 0.3), inset 0 0 40px rgba(255, 0, 255, 0.08);
+      border-color: #ff66ff;
+    }
+
+    .arcade-btn-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .arcade-btn .title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+      letter-spacing: 0.3em;
+    }
+
+    .arcade-btn .sub {
+      font-size: 0.85rem;
+      color: #aaf;
+      margin-top: 0.4rem;
+      text-shadow: 0 0 10px #66f;
+      letter-spacing: 0.15em;
+    }
+
+    .arcade-btn .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff00ff, #00ffff);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.15rem 0.8rem;
+      border-radius: 10px;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      text-shadow: none;
+    }
+
     .card.featured {
       position: relative;
       overflow: hidden;
@@ -169,6 +241,14 @@
 <body>
   <h1>Kevin's Game Collection</h1>
   <p class="subtitle">Nine browser-based games — pick your adventure</p>
+
+  <a href="arcade/index.html" class="arcade-btn">
+    <div class="arcade-btn-inner">
+      <div class="badge">★ 3D EXPERIENCE ★</div>
+      <div class="title">ENTER THE ARCADE</div>
+      <div class="sub">WASD to move · Mouse to look · Click cabinets to play</div>
+    </div>
+  </a>
 
   <div class="games">
     <a href="clue/index.html" class="card clue featured">
