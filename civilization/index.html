@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micro Civilization</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="game-container">
+  <div id="hud-bar">
+    <div class="hud-item"><span class="hud-label">Turn</span><span id="turn-number" class="hud-value">1</span></div>
+    <div class="hud-item"><span class="hud-label">Gold</span><span id="gold-amount" class="hud-value">0</span></div>
+    <div class="hud-item"><span class="hud-label">Science</span><span id="science-amount" class="hud-value">0</span>/<span id="science-target" class="hud-value">20</span></div>
+    <div class="hud-item"><span class="hud-label">Researching</span><span id="current-research" class="hud-value">None</span></div>
+    <div class="hud-item"><span class="hud-label">Pop</span><span id="total-population" class="hud-value">0</span></div>
+    <div class="hud-item"><span class="hud-label">Score</span><span id="score-value" class="hud-value">0</span></div>
+    <button id="mute-btn" title="Toggle Sound">Sound: ON</button>
+  </div>
+  <div id="main-area">
+    <div id="map-container">
+      <canvas id="game-canvas"></canvas>
+    </div>
+    <div id="right-panel">
+      <div id="selection-panel" class="panel">
+        <div class="panel-header">Selection</div>
+        <div id="selection-info">Click a tile, unit, or city</div>
+        <div id="terrain-info" class="sub-info"></div>
+      </div>
+      <div id="unit-commands" class="panel" style="display:none">
+        <div class="panel-header">Unit</div>
+        <div id="unit-info"></div>
+        <div class="btn-group">
+          <button id="cmd-found-city" class="cmd-btn">Found City (F)</button>
+          <button id="cmd-fortify" class="cmd-btn">Fortify</button>
+          <button id="cmd-wake" class="cmd-btn">Wake</button>
+          <button id="cmd-skip" class="cmd-btn">Skip</button>
+        </div>
+      </div>
+      <div id="city-panel" class="panel" style="display:none">
+        <div class="panel-header"><span id="city-name">City</span> <span id="city-pop" class="sub-value"></span></div>
+        <div class="city-stats">
+          <span>Food: <span id="city-food">0</span>/<span id="city-food-target">15</span></span>
+          <span>Prod: <span id="city-prod">0</span>/<span id="city-prod-target">50</span></span>
+        </div>
+        <div class="city-progress"><div id="city-progress-bar" class="progress-bar"><span id="city-progress-fill" class="progress-fill"></span></div></div>
+        <div id="city-building-info" class="sub-info"></div>
+        <div class="panel-subheader">Producing</div>
+        <select id="production-select"></select>
+        <div id="city-buildings" class="sub-info"></div>
+      </div>
+      <div id="research-panel" class="panel">
+        <div class="panel-header">Research</div>
+        <div id="research-info"></div>
+        <div class="research-progress"><div id="research-progress-bar" class="progress-bar"><span id="research-progress-fill" class="progress-fill"></span></div></div>
+        <select id="research-select"></select>
+      </div>
+      <div id="event-log" class="panel">
+        <div class="panel-header">Event Log</div>
+        <div id="log-entries"></div>
+      </div>
+      <div id="action-buttons">
+        <button id="end-turn-btn" class="primary-btn">End Turn (Space)</button>
+        <button id="new-game-btn" class="action-btn">New Game</button>
+        <button id="save-btn" class="action-btn">Save</button>
+        <button id="continue-btn" class="action-btn" style="display:none">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="victory-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <h2 id="victory-title">Victory!</h2>
+    <p id="victory-message"></p>
+    <button id="victory-ok-btn">OK</button>
+  </div>
+</div>
+<div id="newgame-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <h2>New Game</h2>
+    <p>Start a new game? Unsaved progress will be lost.</p>
+    <button id="newgame-confirm-btn">Yes, Start New Game</button>
+    <button id="newgame-cancel-btn">Cancel</button>
+  </div>
+</div>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/map.js"></script>
+<script src="js/units.js"></script>
+<script src="js/cities.js"></script>
+<script src="js/tech.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
