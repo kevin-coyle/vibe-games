@@ -11,10 +11,11 @@ body {
   font-family: 'Courier New', monospace;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
+  padding: 16px;
   user-select: none;
-  overflow: hidden;
+  overflow: auto;
 }
 #game-wrapper {
   background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
@@ -49,6 +50,7 @@ body {
 }
 #toolbar {
   width: 140px;
+  max-height: 520px;
   background: rgba(0,0,0,0.5);
   border: 1px solid #e94560;
   border-radius: 6px;
@@ -56,6 +58,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: auto;
 }
 #toolbar .tool-group-label {
   color: #8899aa;
@@ -188,7 +191,7 @@ const CFG = {
   TILE_SIZE: 32,
   GRID_W: 25,
   GRID_H: 16,
-  GUEST_SPEED: 6,
+  GUEST_SPEED: 38,
   GUEST_SPAWN_INTERVAL: 3000,
   TICK_INTERVAL: 50,
   MONEY_START: 10000,
@@ -303,10 +306,15 @@ function initGrid() {
   }
   // Place entrance
   game.grid[0][12] = { type: T.ENTRANCE, data: { name:'Entrance' } };
-  // Place a few path tiles from entrance
-  game.grid[1][12] = { type: T.PATH, data: {} };
-  game.grid[1][11] = { type: T.PATH, data: {} };
-  game.grid[1][13] = { type: T.PATH, data: {} };
+  // Place a small starter walkway so visitors are active right away.
+  const starterPaths = [
+    [12,1], [12,2], [12,3], [12,4], [12,5],
+    [8,5], [9,5], [10,5], [11,5], [13,5], [14,5], [15,5], [16,5],
+    [8,6], [16,6], [8,7], [9,7], [10,7], [11,7], [12,7], [13,7], [14,7], [15,7], [16,7],
+  ];
+  for (const [x, y] of starterPaths) {
+    game.grid[y][x] = { type: T.PATH, data: {} };
+  }
 }
 
 // ============================================================
@@ -323,7 +331,7 @@ class Guest {
     this.hunger = 10 + Math.random() * 20;
     this.thirst = 10 + Math.random() * 20;
     this.energy = 70 + Math.random() * 30;
-    this.speed = 0.3 + Math.random() * 0.2;
+    this.speed = CFG.GUEST_SPEED * (0.85 + Math.random() * 0.3);
     this.dir = { x: 0, y: 1 };
     this.state = 'entering'; // entering, wandering, riding, eating, drinking, leaving, sitting
     this.stateTimer = 0;
@@ -332,8 +340,9 @@ class Guest {
     this.timeInPark = 0;
     this.money = 20 + Math.floor(Math.random() * 30);
     this.color = `hsl(${Math.floor(Math.random() * 60 + 200)}, 70%, ${50 + Math.floor(Math.random() * 20)}%)`;
-    this.size = 4 + Math.random() * 2;
+    this.size = 6 + Math.random() * 2;
     this.atRide = null;
+    this.atShop = null;
     this.moveCounter = 0;
     this.exitIntent = false;
     this.preferredCats = ['gentle','moderate','thrilling'][Math.floor(Math.random() * 3)];
@@ -361,7 +370,7 @@ class Guest {
     // State machine
     switch (this.state) {
       case 'entering':
-        this.moveToward(12, 1, dt);
+        this.moveToward(game.entranceX, 1, dt);
         if (this.y >= 1) this.state = 'wandering';
         break;
 
@@ -394,6 +403,10 @@ class Guest {
         if (this.stateTimer <= 0) {
           this.happiness = Math.min(100, this.happiness + 5);
           this.state = 'wandering';
+          if (this.atShop) {
+            this.atShop.occupancy = Math.max(0, (this.atShop.occupancy || 1) - 1);
+            this.atShop = null;
+          }
         }
         break;
       }
@@ -419,9 +432,10 @@ class Guest {
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (dist < 2) {
       this.x = tx; this.y = ty;
+      this.px = targetPx; this.py = targetPy;
       return;
     }
-    const step = this.speed * dt * 1.5;
+    const step = this.speed * dt;
     this.px += (dx/dist) * step;
     this.py += (dy/dist) * step;
     this.x = Math.floor(this.px / CFG.TILE_SIZE);
@@ -430,7 +444,7 @@ class Guest {
 
   wander(dt) {
     this.moveCounter++;
-    const threshold = Math.max(5, 15 - Math.floor(this.speed * 10));
+    const threshold = Math.max(8, Math.floor(28 - this.speed * 0.3));
 
     if (this.moveCounter % threshold === 0) {
       // Consider needs
@@ -490,7 +504,7 @@ class Guest {
       }
     } else {
       // Just move in current direction
-      const step = this.speed * dt * 1.5;
+      const step = this.speed * dt;
       this.px += this.dir.x * step;
       this.py += this.dir.y * step;
       this.x = Math.floor(this.px / CFG.TILE_SIZE);
@@ -506,7 +520,7 @@ class Guest {
       const nx = this.x + d.x, ny = this.y + d.y;
       if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
         const t = game.grid[ny][nx].type;
-        if (walkable.includes(t) || RIDE_DATA[t]) {
+        if (walkable.includes(t)) {
           neighbors.push({ x: nx, y: ny, d });
         }
       }
@@ -524,7 +538,7 @@ class Guest {
       for (let dx = -3; dx <= 3; dx++) {
         const nx = this.x + dx, ny = this.y + dy;
         if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
-          if (game.grid[ny][nx].type === type) return { x: nx, y: ny, type };
+          if (game.grid[ny][nx].type === type) return game.grid[ny][nx];
         }
       }
     }
@@ -536,7 +550,7 @@ class Guest {
       for (let dx = -2; dx <= 2; dx++) {
         const nx = this.x + dx, ny = this.y + dy;
         if (nx >= 0 && nx < CFG.GRID_W && ny >= 0 && ny < CFG.GRID_H) {
-          if (game.grid[ny][nx].type === type) return { x: nx, y: ny, type };
+          if (game.grid[ny][nx].type === type) return game.grid[ny][nx];
         }
       }
     }
@@ -560,7 +574,7 @@ class Guest {
             const occupancy = t.data?.occupancy || 0;
             const maxOcc = 5;
             if (occupancy < maxOcc) {
-              found.push(t);
+              if (!found.some(foundTile => foundTile.data === t.data)) found.push(t);
             }
           }
         }
@@ -570,13 +584,15 @@ class Guest {
   }
 
   useRide(tile, rd) {
+    const cost = Math.min(this.money, 4 + Math.floor(Math.random() * 8));
+    if (cost <= 0) return;
     this.state = 'riding';
     this.stateTimer = 3000 + Math.random() * 3000;
-    const cost = 4 + Math.floor(Math.random() * 8);
     this.money -= cost;
+    game.money += cost;
     game.totalIncome += cost;
-    this.atRide = tile;
     tile.data = tile.data || {};
+    this.atRide = tile.data;
     tile.data.occupancy = (tile.data.occupancy || 0) + 1;
     if (tile.data.totalIncome === undefined) tile.data.totalIncome = 0;
     tile.data.totalIncome += cost;
@@ -588,12 +604,15 @@ class Guest {
   }
 
   useShop(shop, state, type) {
+    const cost = Math.min(this.money, 3 + Math.floor(Math.random() * 5));
+    if (cost <= 0) return;
     this.state = state;
     this.stateTimer = 2000 + Math.random() * 2000;
-    const cost = 3 + Math.floor(Math.random() * 5);
     this.money -= cost;
+    game.money += cost;
     game.totalIncome += cost;
     shop.data = shop.data || {};
+    this.atShop = shop.data;
     shop.data.occupancy = (shop.data.occupancy || 0) + 1;
     if (shop.data.totalIncome === undefined) shop.data.totalIncome = 0;
     shop.data.totalIncome += cost;
@@ -629,6 +648,39 @@ function getToolCost(toolType) {
   return 0;
 }
 
+function isDecorType(type) {
+  return type === T.TREE || type === T.FLOWER || type === T.LAMP;
+}
+
+function isRideType(type) {
+  return type === T.CAROUSEL || type === T.FERRIS_WHEEL || type === T.TEA_CUPS ||
+    type === T.ROLLER_COASTER || type === T.LOG_FLUME || type === T.BUMPER_CARS ||
+    type === T.DROP_TOWER || type === T.LOOP_COASTER || type === T.GHOST_HOUSE;
+}
+
+function isAttractionOrigin(x, y) {
+  const data = game.grid[y][x].data;
+  return !data || (data.originX === x && data.originY === y);
+}
+
+function getAttractionTiles(tile, fallbackX, fallbackY) {
+  const data = tile.data;
+  if (!data || data.originX === undefined || data.originY === undefined) {
+    return [{ x: fallbackX, y: fallbackY }];
+  }
+  const tiles = [];
+  for (let dy = 0; dy < data.h; dy++) {
+    for (let dx = 0; dx < data.w; dx++) {
+      const x = data.originX + dx;
+      const y = data.originY + dy;
+      if (x >= 0 && x < CFG.GRID_W && y >= 0 && y < CFG.GRID_H) {
+        tiles.push({ x, y });
+      }
+    }
+  }
+  return tiles;
+}
+
 function canPlace(toolType, gx, gy) {
   if (gx < 0 || gx >= CFG.GRID_W || gy < 0 || gy >= CFG.GRID_H) return false;
   if (toolType === 'remove') {
@@ -636,7 +688,7 @@ function canPlace(toolType, gx, gy) {
     return t !== T.GRASS && t !== T.ENTRANCE;
   }
   if (toolType === 'path') {
-    return game.grid[gy][gx].type === T.GRASS;
+    return game.money >= 20 && game.grid[gy][gx].type === T.GRASS;
   }
   const rd = RIDE_DATA[toolType];
   if (!rd) return false;
@@ -655,15 +707,18 @@ function placeTile(toolType, gx, gy) {
   if (toolType === 'remove') {
     const t = game.grid[gy][gx];
     if (t.type === T.GRASS || t.type === T.ENTRANCE) return false;
+    const tiles = getAttractionTiles(t, gx, gy);
     const refund = t.data?.refund || 0;
     game.money += refund;
-    t.type = T.GRASS;
-    t.data = null;
+    for (const pos of tiles) {
+      game.grid[pos.y][pos.x] = { type: T.GRASS, data: null };
+    }
     playSound('build');
+    if (refund > 0) addFloat(gx * TS + TS/2, gy * TS + TS/2, `+$${refund}`, '#7fff7f');
     return true;
   }
   if (toolType === 'path') {
-    if (game.grid[gy][gx].type !== T.GRASS) return false;
+    if (game.money < 20 || game.grid[gy][gx].type !== T.GRASS) return false;
     game.grid[gy][gx] = { type: T.PATH, data: {} };
     game.money -= 20;
     playSound('build');
@@ -681,19 +736,23 @@ function placeTile(toolType, gx, gy) {
     }
   }
   game.money -= rd.cost;
-  const totalCost = rd.cost;
+  const sharedData = {
+    name: rd.name,
+    income: rd.income,
+    occupancy: 0,
+    totalIncome: 0,
+    refund: Math.floor(rd.cost * 0.5),
+    originX: gx,
+    originY: gy,
+    w,
+    h,
+  };
   for (let dy = 0; dy < h; dy++) {
     for (let dx = 0; dx < w; dx++) {
       const nx = gx + dx, ny = gy + dy;
       game.grid[ny][nx] = {
         type: toolType,
-        data: {
-          name: rd.name,
-          income: rd.income,
-          occupancy: 0,
-          totalIncome: 0,
-          refund: Math.floor(totalCost * 0.5 / (w * h)),
-        }
+        data: sharedData
       };
     }
   }
@@ -707,6 +766,27 @@ function spawnGuest() {
   if (game.guests.length >= 35) return;
   const guest = new Guest();
   game.guests.push(guest);
+}
+
+function seedOpeningGuests() {
+  const starts = [
+    { x: 12, y: 2, dir: { x: 0, y: 1 } },
+    { x: 12, y: 5, dir: { x: -1, y: 0 } },
+    { x: 9, y: 5, dir: { x: 1, y: 0 } },
+    { x: 15, y: 7, dir: { x: -1, y: 0 } },
+  ];
+  for (let i = 0; i < 4; i++) {
+    const guest = new Guest();
+    const start = starts[i];
+    guest.x = start.x;
+    guest.y = start.y;
+    guest.px = start.x * CFG.TILE_SIZE + CFG.TILE_SIZE/2;
+    guest.py = start.y * CFG.TILE_SIZE + CFG.TILE_SIZE/2;
+    guest.dir = start.dir;
+    guest.state = 'wandering';
+    guest.timeInPark = i * 0.4;
+    game.guests.push(guest);
+  }
 }
 
 // ============================================================
@@ -739,10 +819,11 @@ function update(dt) {
     for (let y = 0; y < CFG.GRID_H; y++) {
       for (let x = 0; x < CFG.GRID_W; x++) {
         const t = game.grid[y][x];
-        if (t.data && t.data.income > 0 && t.data.occupancy > 0) {
+        if (t.data && t.data.income > 0 && t.data.occupancy > 0 && isAttractionOrigin(x, y)) {
           const inc = t.data.income;
           game.totalIncome += inc;
           game.money += inc;
+          t.data.totalIncome += inc;
           earned += inc;
         }
       }
@@ -766,7 +847,7 @@ function update(dt) {
       for (let y = 0; y < CFG.GRID_H; y++) {
         for (let x = 0; x < CFG.GRID_W; x++) {
           const t = game.grid[y][x].type;
-          if (RIDE_DATA[t]) costs += Math.floor(RIDE_DATA[t].cost * 0.05);
+          if (RIDE_DATA[t] && isAttractionOrigin(x, y)) costs += Math.floor(RIDE_DATA[t].cost * 0.05);
         }
       }
       game.money -= costs;
@@ -813,15 +894,11 @@ function updateParkRating() {
 }
 
 function countRides() {
-  const rideTypes = new Set([T.CAROUSEL, T.FERRIS_WHEEL, T.TEA_CUPS, T.ROLLER_COASTER, T.LOG_FLUME, T.BUMPER_CARS, T.DROP_TOWER, T.LOOP_COASTER, T.GHOST_HOUSE]);
   let count = 0;
   for (let y = 0; y < CFG.GRID_H; y++) {
     for (let x = 0; x < CFG.GRID_W; x++) {
       const t = game.grid[y][x].type;
-      if (rideTypes.has(t)) {
-        const isOrigin = (x === 0 || game.grid[y][x-1].type !== t) && (y === 0 || game.grid[y-1][x].type !== t);
-        if (isOrigin) count++;
-      }
+      if (isRideType(t) && isAttractionOrigin(x, y)) count++;
     }
   }
   return count;
@@ -840,15 +917,11 @@ function countDecor() {
 
 function countShops() {
   const shopTypes = new Set([T.BURGER_SHOP, T.DRINK_STALL, T.ICE_CREAM, T.SOUVENIR]);
-  const seen = new Set();
   let count = 0;
   for (let y = 0; y < CFG.GRID_H; y++) {
     for (let x = 0; x < CFG.GRID_W; x++) {
       const t = game.grid[y][x].type;
-      if (shopTypes.has(t) && !seen.has(t)) {
-        seen.add(t);
-        count++;
-      }
+      if (shopTypes.has(t) && isAttractionOrigin(x, y)) count++;
     }
   }
   return count;
@@ -856,15 +929,11 @@ function countShops() {
 
 function countFacilities() {
   const facTypes = new Set([T.TOILET, T.BENCH, T.BIN]);
-  const seen = new Set();
   let count = 0;
   for (let y = 0; y < CFG.GRID_H; y++) {
     for (let x = 0; x < CFG.GRID_W; x++) {
       const t = game.grid[y][x].type;
-      if (facTypes.has(t) && !seen.has(t)) {
-        seen.add(t);
-        count++;
-      }
+      if (facTypes.has(t) && isAttractionOrigin(x, y)) count++;
     }
   }
   return count;
@@ -927,9 +996,9 @@ function render() {
         ctx.fillText('🚪', px + TS/2, py + TS - 4);
         ctx.fillStyle = 'rgba(255,215,0,0.3)';
         ctx.fillRect(px, py, TS, 2);
-      } else if (RIDE_DATA[t]) {
+      } else if (RIDE_DATA[t] && !isDecorType(t)) {
         const rd = RIDE_DATA[t];
-        const isOrigin = (x === 0 || game.grid[y][x-1].type !== t) && (y === 0 || game.grid[y-1][x].type !== t);
+        const isOrigin = isAttractionOrigin(x, y);
         if (isOrigin) {
           const w = rd.w || 1, h = rd.h || 1;
           // Building base
@@ -1035,6 +1104,12 @@ function render() {
 
   // Draw guests
   for (const g of game.guests) {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath();
+    ctx.ellipse(g.px + 1, g.py + g.size - 1, g.size * 0.85, 2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     // Body
     ctx.beginPath();
     ctx.arc(g.px, g.py, g.size, 0, Math.PI * 2);
@@ -1063,11 +1138,6 @@ function render() {
       ctx.fillText(thought, g.px, g.py - g.size - 6);
     }
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-    ctx.beginPath();
-    ctx.ellipse(g.px + 1, g.py + g.size - 1, g.size * 0.8, 2, 0, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   // Floating text
@@ -1370,6 +1440,7 @@ function gameLoop(timestamp) {
 // ============================================================
 initGrid();
 buildToolbar();
+seedOpeningGuests();
 
 // Init sounds on first interaction
 document.addEventListener('click', () => {
