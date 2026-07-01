@@ -25,7 +25,8 @@ canvas {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,7 +41,7 @@ canvas {
 
 #instructions {
   text-align: center;
-  max-width: 600px;
+  max-width: 640px;
   padding: 40px;
 }
 
@@ -61,22 +62,39 @@ canvas {
 
 .subtitle {
   font-size: 18px;
-  color: #666;
-  margin-bottom: 30px;
+  color: #777;
+  margin-bottom: 24px;
   letter-spacing: 4px;
 }
 
-.controls-info {
-  margin: 25px 0;
+.objective-brief {
   font-size: 14px;
-  color: #555;
+  color: #9a9a9a;
+  line-height: 1.9;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 3px #000;
+}
+
+.controls-info {
+  margin: 20px 0 8px;
+  font-size: 13px;
+  color: #666;
   line-height: 2;
+}
+
+.best-time {
+  font-size: 13px;
+  color: #4fa8b8;
+  letter-spacing: 2px;
+  min-height: 18px;
+  margin-bottom: 4px;
 }
 
 .loading {
   font-size: 14px;
   color: #888;
-  margin: 20px 0;
+  margin: 16px 0 4px;
+  min-height: 18px;
   animation: blink 1s step-end infinite;
 }
 
@@ -89,13 +107,13 @@ canvas {
   font-size: 20px;
   font-weight: 700;
   padding: 16px 48px;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.5);
   color: #8b0000;
   border: 2px solid #8b0000;
   cursor: pointer;
   letter-spacing: 4px;
   transition: all 0.3s ease;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .start-btn:hover:not(:disabled) {
@@ -109,6 +127,37 @@ canvas {
   cursor: not-allowed;
   border-color: #444;
   color: #444;
+}
+
+#pause {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  cursor: pointer;
+}
+
+#pause.hidden {
+  display: none;
+}
+
+#pause h1 {
+  font-family: 'Creepster', cursive;
+  font-size: 56px;
+  color: #8b0000;
+  letter-spacing: 8px;
+  text-shadow: 0 0 40px rgba(139, 0, 0, 0.5);
+}
+
+#pause p {
+  margin-top: 14px;
+  color: #777;
+  letter-spacing: 3px;
+  font-size: 14px;
 }
 
 #hud {
@@ -138,8 +187,9 @@ canvas {
 
 .hud-label {
   font-size: 11px;
-  color: #666;
+  color: #777;
   letter-spacing: 3px;
+  text-shadow: 0 1px 3px #000;
 }
 
 #health-bar {
@@ -164,6 +214,31 @@ canvas {
   font-weight: 700;
   color: #cc0000;
   width: 30px;
+  text-shadow: 0 1px 3px #000;
+}
+
+#souls-container {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+#souls-counter {
+  font-size: 15px;
+  font-weight: 700;
+  color: #6fd8e8;
+  letter-spacing: 4px;
+  text-shadow: 0 0 16px rgba(110, 220, 235, 0.5), 0 1px 3px #000;
+}
+
+#objective {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #6a7f85;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 3px #000;
 }
 
 #timer-container {
@@ -176,9 +251,34 @@ canvas {
 #timer {
   font-size: 28px;
   font-weight: 700;
-  color: #888;
+  color: #999;
   letter-spacing: 2px;
   margin-top: 4px;
+  text-shadow: 0 1px 4px #000;
+}
+
+#stamina-container {
+  position: absolute;
+  bottom: 40px;
+  left: 30px;
+}
+
+#stamina-bar {
+  width: 150px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+#stamina-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2a5a3a, #4fae66);
+  transition: width 0.15s linear, opacity 0.3s ease;
+  border-radius: 3px;
 }
 
 #flashlight-container {
@@ -219,23 +319,25 @@ canvas {
 
 #message {
   position: absolute;
-  bottom: 80px;
+  bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
-  color: #cc0000;
+  color: #cc4444;
   text-align: center;
   opacity: 0;
   transition: opacity 0.5s ease;
-  text-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+  text-shadow: 0 0 20px rgba(139, 0, 0, 0.5), 0 1px 3px #000;
   letter-spacing: 2px;
+  white-space: nowrap;
 }
 
 #message.show {
   opacity: 1;
 }
 
-#gameOver {
+#gameOver,
+#winScreen {
   position: fixed;
   top: 0;
   left: 0;
@@ -250,30 +352,48 @@ canvas {
   transition: opacity 1s ease;
 }
 
-#gameOver.hidden {
+#gameOver.hidden,
+#winScreen.hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-#gameOver h1 {
+#gameOver h1,
+#winScreen h1 {
   font-family: 'Creepster', cursive;
   font-size: 80px;
-  color: #8b0000;
-  text-shadow: 0 0 60px rgba(139, 0, 0, 0.6);
   letter-spacing: 12px;
   margin-bottom: 20px;
 }
 
-#gameOver p {
+#gameOver h1 {
+  color: #8b0000;
+  text-shadow: 0 0 60px rgba(139, 0, 0, 0.6);
+}
+
+#winScreen h1 {
+  color: #5fc8d8;
+  text-shadow: 0 0 60px rgba(95, 200, 216, 0.5);
+}
+
+#gameOver p,
+#winScreen p {
   font-size: 18px;
   color: #666;
   margin: 10px 0;
   letter-spacing: 2px;
 }
 
-#finalTime {
+#finalTime,
+#winTime,
+#winBanished {
   color: #cc0000;
   font-weight: 700;
+}
+
+#winTime,
+#winBanished {
+  color: #5fc8d8;
 }
 
 #deathMessage {
@@ -282,7 +402,8 @@ canvas {
   font-style: italic;
 }
 
-#restartBtn {
+#restartBtn,
+#winRestartBtn {
   font-family: 'Courier Prime', monospace;
   font-size: 18px;
   font-weight: 700;
@@ -296,8 +417,19 @@ canvas {
   margin-top: 40px;
 }
 
+#winRestartBtn {
+  color: #5fc8d8;
+  border-color: #5fc8d8;
+}
+
 #restartBtn:hover {
   background: #8b0000;
   color: #000;
   box-shadow: 0 0 30px rgba(139, 0, 0, 0.4);
+}
+
+#winRestartBtn:hover {
+  background: #5fc8d8;
+  color: #000;
+  box-shadow: 0 0 30px rgba(95, 200, 216, 0.4);
 }
